@@ -50,7 +50,7 @@ body::after {
     z-index: 1; 
     cursor: crosshair; 
     background: transparent; 
-    animation: crtGlitch 3.2s infinite;
+    animation: crtGlitch 1.5s infinite;
 }
 
 /* Crosshair */
@@ -237,9 +237,9 @@ body::after {
     height: calc(100% + 100px);
     z-index: 997;
     pointer-events: none;
-    opacity: 0.24; /* thickened noise texture */
+    opacity: 0.38; /* thickened noise texture */
     background-repeat: repeat;
-    animation: grainAnimation 0.1s steps(4) infinite;
+    animation: grainAnimation 0.08s steps(4) infinite;
 }
 
 @keyframes grainAnimation {

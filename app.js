@@ -55,7 +55,7 @@ function startTVStatic() {
     filter.frequency.setValueAtTime(120, actx.currentTime);
     filter.Q.setValueAtTime(0.6, actx.currentTime);
     staticGainNode = actx.createGain();
-    staticGainNode.gain.setValueAtTime(0.025, actx.currentTime);
+    staticGainNode.gain.setValueAtTime(0.065, actx.currentTime);
     whiteNoise.connect(filter);
     filter.connect(staticGainNode);
     staticGainNode.connect(actx.destination);
@@ -223,16 +223,16 @@ function initFilmGrain() {
     canvas.width = 128;
     canvas.height = 128;
     const ctx = canvas.getContext('2d');
-    const imgData = ctx.createImageData(128, 128);
-    const data = imgData.data;
-    for (let i = 0; i < data.length; i += 4) {
-        const val = Math.floor(Math.random() * 255);
-        data[i] = val;
-        data[i + 1] = val;
-        data[i + 2] = val;
-        data[i + 3] = 70; // opacity of the noise grain pixels (increased for thicker noise)
+    ctx.clearRect(0, 0, 128, 128);
+    
+    const blockSize = 2; // larger grittier grain blocks
+    for (let y = 0; y < 128; y += blockSize) {
+        for (let x = 0; x < 128; x += blockSize) {
+            const val = Math.floor(Math.random() * 255);
+            ctx.fillStyle = `rgba(${val}, ${val}, ${val}, 0.38)`; // higher opacity
+            ctx.fillRect(x, y, blockSize, blockSize);
+        }
     }
-    ctx.putImageData(imgData, 0, 0);
     const overlay = document.getElementById('grain-overlay');
     if (overlay) {
         overlay.style.backgroundImage = `url(${canvas.toDataURL()})`;
