@@ -106,14 +106,17 @@ function updateSkyMatrix() {
     skyCtx.fillStyle = 'rgba(0, 0, 0, 0.06)';
     skyCtx.fillRect(0, 0, 512, 512);
     
-    skyCtx.fillStyle = '#ff0033';
     skyCtx.font = `bold ${skyFontSize}px monospace`;
     
     const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@%&+-/*";
+    const colors = ['#ff2233', '#ffcc00', '#00ff66']; // Red, Yellow, Green
+    
     for (let i = 0; i < skyColumns; i++) {
         const char = chars[Math.floor(Math.random() * chars.length)];
         const x = i * (512 / skyColumns);
         const y = skyDrops[i] * skyFontSize;
+        
+        skyCtx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
         skyCtx.fillText(char, x, y);
         
         if (y > 512 && Math.random() > 0.975) {
@@ -266,9 +269,9 @@ const interactables = [];
 const ringObjects = [];
 const mapSize = 600;
 
-// Ground (Perfect Black & White Chessboard Floor, Glowing Bright)
+// Ground (Perfect Black & White Chessboard Floor, Slightly Dimmed)
 const groundTex = createChessboardTexture('#000000', '#ffffff', 40, 40);
-const dirtMat = new THREE.MeshBasicMaterial({ map: groundTex });
+const dirtMat = new THREE.MeshBasicMaterial({ map: groundTex, color: 0x555555 });
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(mapSize, mapSize), dirtMat);
 ground.rotation.x = -Math.PI / 2; scene.add(ground);
 
@@ -291,14 +294,14 @@ function createChessboardTexture(color1, color2, repeatX, repeatY) {
     return tex;
 }
 
-// Asphalt Chessboard Roads (Perfect Black & White, Glowing Bright)
+// Asphalt Chessboard Roads (Perfect Black & White, Slightly Dimmed)
 const roadZTex = createChessboardTexture('#000000', '#ffffff', 2, 40);
-const roadZMat = new THREE.MeshBasicMaterial({ map: roadZTex });
+const roadZMat = new THREE.MeshBasicMaterial({ map: roadZTex, color: 0x777777 });
 const roadZ = new THREE.Mesh(new THREE.PlaneGeometry(30, mapSize), roadZMat);
 roadZ.rotation.x = -Math.PI / 2; roadZ.position.y = 0.05; scene.add(roadZ);
 
 const roadXTex = createChessboardTexture('#000000', '#ffffff', 40, 2);
-const roadXMat = new THREE.MeshBasicMaterial({ map: roadXTex });
+const roadXMat = new THREE.MeshBasicMaterial({ map: roadXTex, color: 0x777777 });
 const roadX = new THREE.Mesh(new THREE.PlaneGeometry(mapSize, 30), roadXMat);
 roadX.rotation.x = -Math.PI / 2; roadX.position.y = 0.06; scene.add(roadX);
 
