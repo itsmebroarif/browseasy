@@ -34,6 +34,36 @@ function sfxCoin() { sfxSound(800, 0.1, 'square', 0.06); setTimeout(() => sfxSou
 function sfxInteract() { sfxSound(500, 0.08, 'sine', 0.04); setTimeout(() => sfxSound(700, 0.08, 'sine', 0.04), 60); }
 function sfxLevel() { [600, 800, 1000, 1200].forEach((f, i) => setTimeout(() => sfxSound(f, 0.12, 'square', 0.05), i * 70)); }
 
+let staticNoiseSource = null;
+let staticGainNode = null;
+function startTVStatic() {
+  try {
+    initAudio();
+    if (!actx) return;
+    if (staticNoiseSource) return;
+    const bufferSize = 2 * actx.sampleRate;
+    const noiseBuffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+    }
+    const whiteNoise = actx.createBufferSource();
+    whiteNoise.buffer = noiseBuffer;
+    whiteNoise.loop = true;
+    const filter = actx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(120, actx.currentTime);
+    filter.Q.setValueAtTime(0.6, actx.currentTime);
+    staticGainNode = actx.createGain();
+    staticGainNode.gain.setValueAtTime(0.025, actx.currentTime);
+    whiteNoise.connect(filter);
+    filter.connect(staticGainNode);
+    staticGainNode.connect(actx.destination);
+    whiteNoise.start();
+    staticNoiseSource = whiteNoise;
+  } catch(e) {}
+}
+
 const scene = new THREE.Scene();
 // Extremely gloomy dark violet/black sky and background
 const gloomyColor = 0x07010a;
@@ -66,6 +96,7 @@ instructions.addEventListener('click', () => {
         if (bgMusic.paused) {
             bgMusic.play().catch(err => console.log("BGM play blocked: ", err));
         }
+        startTVStatic();
     }
     else if (lockCooldown) cooldownText.style.display = 'block';
 });
@@ -265,6 +296,114 @@ function createSignTexture(text, bgColor, textColor) {
     return new THREE.CanvasTexture(canvas);
 }
 
+// === MONSTER & REAL-TIME COMBAT SETUP ===
+function createMonsterFaceTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f051c'; ctx.fillRect(0, 0, 256, 256);
+    
+    // Red eyes
+    ctx.fillStyle = '#ff0033';
+    ctx.fillRect(40, 60, 40, 40);
+    ctx.fillRect(176, 60, 40, 40);
+    
+    // Pupils
+    ctx.fillStyle = '#ffff00';
+    ctx.fillRect(58, 60, 4, 40);
+    ctx.fillRect(194, 60, 4, 40);
+    
+    // Eyebrows
+    ctx.strokeStyle = '#ff0033'; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(35, 45); ctx.lineTo(85, 75); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(221, 45); ctx.lineTo(171, 75); ctx.stroke();
+    
+    // Smile with sharp teeth
+    ctx.strokeStyle = '#ff0033'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(128, 140, 65, 0, Math.PI, false); ctx.stroke();
+    
+    // Sharp teeth
+    ctx.fillStyle = '#ffffff';
+    const teethY = 145;
+    for (let x = 75; x <= 165; x += 18) {
+        ctx.beginPath();
+        ctx.moveTo(x, teethY);
+        ctx.lineTo(x + 8, teethY + 16);
+        ctx.lineTo(x + 16, teethY);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.moveTo(x, teethY + 20);
+        ctx.lineTo(x + 8, teethY + 4);
+        ctx.lineTo(x + 16, teethY + 20);
+        ctx.closePath();
+        ctx.fill();
+    }
+    return new THREE.CanvasTexture(canvas);
+}
+
+const monsterFaceMat = new THREE.MeshStandardMaterial({
+    map: createMonsterFaceTexture(),
+    emissive: 0x990022,
+    emissiveIntensity: 0.8
+});
+
+const monsters = [];
+function createMonster(x, z) {
+    const monsterBodyMat = new THREE.MeshStandardMaterial({
+        color: 0x1d0532,
+        emissive: 0x110220,
+        emissiveIntensity: 0.8,
+        roughness: 0.6
+    });
+    
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.5, 4.5, 2.5), monsterBodyMat);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.2, 2.2), monsterFaceMat);
+    head.position.y = 3.35;
+    
+    const monsterGrp = new THREE.Group();
+    monsterGrp.add(body); monsterGrp.add(head);
+    monsterGrp.position.set(x, 2.25, z);
+    scene.add(monsterGrp);
+    
+    monsters.push({
+        mesh: monsterGrp,
+        bodyMesh: body,
+        headMesh: head,
+        hp: 100,
+        tx: x,
+        tz: z,
+        speed: 3.5 + Math.random() * 2,
+        wanderTimer: 0,
+        shootCooldown: 0,
+        flashTimer: 0
+    });
+}
+
+// Spawn 8 Monsters
+for (let i = 0; i < 8; i++) {
+    let mx = (Math.random() - 0.5) * 360;
+    let mz = (Math.random() - 0.5) * 360;
+    if (Math.abs(mx - (-20)) < 25 && Math.abs(mz) < 25) {
+        mx += 40; mz += 40;
+    }
+    createMonster(mx, mz);
+}
+
+function drawLaserBeam(from, to, colorHex) {
+    const material = new THREE.LineBasicMaterial({ color: colorHex });
+    const points = [from.clone(), to.clone()];
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+    setTimeout(() => {
+        scene.remove(line);
+        geometry.dispose();
+        material.dispose();
+    }, 100);
+}
+
 const interactables = [];
 const ringObjects = [];
 const mapSize = 600;
@@ -313,6 +452,79 @@ sea.rotation.x = -Math.PI / 2; sea.position.set(0, 0.1, -300); scene.add(sea);
 const sandMat = new THREE.MeshStandardMaterial({ color: 0x4a3b2c, roughness: 1 });
 const beach = new THREE.Mesh(new THREE.PlaneGeometry(mapSize, 50), sandMat);
 beach.rotation.x = -Math.PI / 2; beach.position.set(0, 0.08, -180); scene.add(beach);
+
+// === NEW BUILDINGS: CYBER MALL, CIRCUS, BEACH CANDLES & MORE APARTMENTS ===
+// 1. Cyber Mall
+const mall = createBuilding(-100, -80, 50, 25, 40, 0x0b1022, "MALL BESAR", "#ffcc00", "black");
+const mallLight = new THREE.PointLight(0x00f0ff, 2, 50);
+mallLight.position.set(-100, 20, -58);
+scene.add(mallLight);
+
+// 2. Circus Area
+function createCircusTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    for (let i = 0; i < 8; i++) {
+        ctx.fillStyle = i % 2 === 0 ? '#ff0033' : '#ffff00';
+        ctx.fillRect(i * 16, 0, 16, 128);
+    }
+    return new THREE.CanvasTexture(canvas);
+}
+const circusTex = createCircusTexture();
+const circusBase = new THREE.Mesh(new THREE.CylinderGeometry(15, 15, 12, 16), new THREE.MeshStandardMaterial({ map: circusTex, roughness: 0.5 }));
+circusBase.position.set(90, 6, -60); circusBase.castShadow = true; circusBase.receiveShadow = true;
+scene.add(circusBase);
+const circusRoof = new THREE.Mesh(new THREE.ConeGeometry(17, 10, 16), new THREE.MeshBasicMaterial({ map: circusTex }));
+circusRoof.position.set(90, 17, -60);
+scene.add(circusRoof);
+
+const circusLights = [];
+const circusColors = [0xff00ff, 0x00ffff, 0xffff00, 0xff0000];
+for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2;
+    const cx = 90 + Math.cos(angle) * 20;
+    const cz = -60 + Math.sin(angle) * 20;
+    const pLight = new THREE.PointLight(circusColors[i % circusColors.length], 2, 25);
+    pLight.position.set(cx, 8, cz);
+    scene.add(pLight);
+    circusLights.push(pLight);
+}
+
+// 3. Beach Candles (Yellow-Brownish flame points)
+const beachCandles = [];
+const candleGeo = new THREE.CylinderGeometry(0.3, 0.3, 1.2, 8);
+const candleMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.9 });
+const flameGeo = new THREE.ConeGeometry(0.25, 0.6, 8);
+const flameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+
+for (let i = 0; i < 12; i++) {
+    const cx = -250 + (i * 45) + (Math.random() - 0.5) * 10;
+    const cz = -180 + (Math.random() - 0.5) * 5;
+    
+    const candleGrp = new THREE.Group();
+    const body = new THREE.Mesh(candleGeo, candleMat);
+    body.position.y = 0.6;
+    const flame = new THREE.Mesh(flameGeo, flameMat);
+    flame.position.y = 1.5;
+    
+    candleGrp.add(body); candleGrp.add(flame);
+    candleGrp.position.set(cx, 0.08, cz);
+    scene.add(candleGrp);
+    
+    const cLight = new THREE.PointLight(0xff7700, 1.8, 20);
+    cLight.position.set(cx, 1.8, cz);
+    scene.add(cLight);
+    
+    beachCandles.push({ flame: flame, light: cLight });
+}
+
+// 4. Extra Buildings
+createBuilding(-120, 120, 20, 45, 20, 0x110d1a, "APARTEMEN A", "black", "#ff1d8e");
+createBuilding(120, 120, 22, 50, 22, 0x0f1118, "APARTEMEN B", "black", "#00f0ff");
+createBuilding(-120, -120, 25, 40, 25, 0x150d15, "SHELTER C", "#150d15", "#ffff00");
+createBuilding(120, -120, 20, 35, 20, 0x0a101a, "KANTOR D", "black", "#ff0055");
+createBuilding(-70, -150, 30, 28, 20, 0x0d0d15, "GUDANG E", "black", "#00ffaa");
 
 // Sawah
 const sawahMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, wireframe: true });
@@ -1163,11 +1375,60 @@ function shootPistol() {
   
   if (intersects.length > 0) {
     let object = intersects[0].object;
+    
+    // Check if we shot a monster
+    let hitMonster = null;
+    let tempObj = object;
+    while (tempObj) {
+      hitMonster = monsters.find(m => m.mesh === tempObj || m.bodyMesh === tempObj || m.headMesh === tempObj);
+      if (hitMonster) break;
+      tempObj = tempObj.parent;
+    }
+    
+    if (hitMonster) {
+      // Deal real-time damage
+      hitMonster.hp -= 25;
+      hitMonster.flashTimer = 0.15;
+      sfxSound(180, 0.1, 'sawtooth', 0.15);
+      
+      // Draw player laser
+      const pPos = camera.position.clone();
+      const hitPoint = intersects[0].point;
+      const laserOrigin = pPos.add(new THREE.Vector3(0.5, -0.5, -0.8).applyQuaternion(camera.quaternion));
+      drawLaserBeam(laserOrigin, hitPoint, 0x00f0ff);
+      
+      if (hitMonster.hp <= 0) {
+        money += 25000;
+        document.getElementById('money-display').innerText = `Rp ${money.toLocaleString('id-ID')}`;
+        showNotification("MONSTER MUSNAH! +Rp 25.000");
+        sfxLevel();
+        
+        // Drop rings
+        for (let r = 0; r < 5; r++) {
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.set(
+                hitMonster.mesh.position.x + (Math.random() - 0.5) * 6,
+                1.5,
+                hitMonster.mesh.position.z + (Math.random() - 0.5) * 6
+            );
+            scene.add(ring);
+            ringObjects.push(ring);
+        }
+        
+        scene.remove(hitMonster.mesh);
+        const mIdx = monsters.indexOf(hitMonster);
+        if (mIdx > -1) monsters.splice(mIdx, 1);
+      }
+      return;
+    }
+    
+    // Check if we shot an NPC
     let hitNpc = null;
-    while (object) {
-      hitNpc = interactables.find(i => (i.mesh === object || i.head === object) && i.type === 'npc');
+    let tempNpc = object;
+    while (tempNpc) {
+      hitNpc = interactables.find(i => (i.mesh === tempNpc || i.head === tempNpc) && i.type === 'npc');
       if (hitNpc) break;
-      object = object.parent;
+      tempNpc = tempNpc.parent;
     }
     if (hitNpc && camera.position.distanceTo(hitNpc.parentGrp.position) < 25) {
       if (hitNpc.isCustomer) {
@@ -1350,6 +1611,169 @@ function animate() {
     // Sun scale pulse
     const pulseFactor = 1 + Math.sin(elapsedTime * 2.5) * 0.06;
     sunSprite.scale.set(65 * pulseFactor, 65 * pulseFactor, 1);
+
+    // Circus lights rotation & flashing
+    if (typeof circusLights !== 'undefined') {
+        circusLights.forEach((l, idx) => {
+            l.intensity = 1.5 + Math.sin(elapsedTime * 8 + idx) * 1.5;
+        });
+    }
+
+    // Beach candles flickering
+    if (typeof beachCandles !== 'undefined') {
+        beachCandles.forEach(c => {
+            const flicker = 1 + (Math.random() - 0.5) * 0.15;
+            c.flame.scale.set(flicker, flicker * 1.2, flicker);
+            c.light.intensity = 1.8 * flicker;
+        });
+    }
+
+    // === MONSTERS & NPC DEFENSE SIMULATION ===
+    if (typeof monsters !== 'undefined') {
+        const playerPos = camera.position;
+        
+        // 1. Monster Update Loop
+        for (let m = monsters.length - 1; m >= 0; m--) {
+            const monster = monsters[m];
+            
+            // Handle hit flashing
+            if (monster.flashTimer > 0) {
+                monster.flashTimer -= delta;
+                monster.headMesh.material.emissive.setHex(0xffffff);
+                monster.bodyMesh.material.emissive.setHex(0xff0000);
+            } else {
+                monster.headMesh.material.emissive.setHex(0x990022);
+                monster.bodyMesh.material.emissive.setHex(0x110220);
+            }
+            
+            // Monster targeting: find nearest NPC or Player
+            let targetPos = playerPos;
+            let minDist = playerPos.distanceTo(monster.mesh.position);
+            let targetType = 'player';
+            
+            // Check NPC distances
+            interactables.forEach(i => {
+                if (i.type === 'npc' && !i.isCustomer && i.parentGrp) {
+                    const dist = i.parentGrp.position.distanceTo(monster.mesh.position);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        targetPos = i.parentGrp.position;
+                        targetType = 'npc';
+                    }
+                }
+            });
+            
+            // Movement: seek target if within 100 units, otherwise wander
+            if (minDist < 100) {
+                const dir = new THREE.Vector3().subVectors(targetPos, monster.mesh.position);
+                dir.y = 0;
+                dir.normalize();
+                monster.mesh.position.addScaledVector(dir, monster.speed * delta);
+                monster.mesh.rotation.y = Math.atan2(dir.x, dir.z);
+                
+                // Attack player if within 4 units
+                if (targetType === 'player' && minDist < 4.0 && !isInteracting) {
+                    if (monster.shootCooldown <= 0) {
+                        monster.shootCooldown = 2.0;
+                        
+                        // Screen flash red
+                        const vignette = document.getElementById('vignette-overlay');
+                        if (vignette) {
+                            vignette.style.background = 'radial-gradient(circle, rgba(255,0,0,0) 30%, rgba(255,0,0,0.85) 90%)';
+                            setTimeout(() => {
+                                vignette.style.background = 'radial-gradient(circle, rgba(0,0,0,0) 45%, rgba(4, 0, 8, 0.65) 94%)';
+                            }, 300);
+                        }
+                        
+                        sfxSound(80, 0.35, 'sawtooth', 0.2);
+                        showNotification("KAMU DISERANG MONSTER!");
+                        
+                        // Teleport back to Warkop
+                        money = Math.floor(money * 0.9);
+                        document.getElementById('money-display').innerText = `Rp ${money.toLocaleString('id-ID')}`;
+                        camera.position.set(-20, 2, 10);
+                        if (controls) {
+                            controls.getObject().position.set(-20, 2, 10);
+                        }
+                        showNotification("Kamu pingsan dan terbangun kembali di warkop...");
+                    }
+                }
+            } else {
+                // Wander
+                if (monster.wanderTimer <= 0) {
+                    monster.tx = (Math.random() - 0.5) * 360;
+                    monster.tz = (Math.random() - 0.5) * 360;
+                    monster.wanderTimer = 3 + Math.random() * 5;
+                } else {
+                    monster.wanderTimer -= delta;
+                    const dx = monster.tx - monster.mesh.position.x;
+                    const dz = monster.tz - monster.mesh.position.z;
+                    const dist = Math.sqrt(dx*dx + dz*dz);
+                    if (dist > 1.0) {
+                        const step = (monster.speed * 0.5) * delta;
+                        monster.mesh.position.x += (dx / dist) * step;
+                        monster.mesh.position.z += (dz / dist) * step;
+                        monster.mesh.rotation.y = Math.atan2(dx, dz);
+                    }
+                }
+            }
+            if (monster.shootCooldown > 0) monster.shootCooldown -= delta;
+        }
+        
+        // 2. NPC Auto-defense Shooting Loop
+        interactables.forEach(npc => {
+            if (npc.type === 'npc' && !npc.isCustomer && npc.parentGrp) {
+                let closestMonster = null;
+                let closestDist = 35;
+                
+                monsters.forEach(m => {
+                    const dist = npc.parentGrp.position.distanceTo(m.mesh.position);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestMonster = m;
+                    }
+                });
+                
+                if (closestMonster) {
+                    // Turn NPC to face monster
+                    const dx = closestMonster.mesh.position.x - npc.parentGrp.position.x;
+                    const dz = closestMonster.mesh.position.z - npc.parentGrp.position.z;
+                    npc.parentGrp.rotation.y = Math.atan2(dx, dz);
+                    
+                    if (npc.parentGrp.userData.shootCooldown === undefined) {
+                        npc.parentGrp.userData.shootCooldown = Math.random() * 1.5;
+                    }
+                    npc.parentGrp.userData.shootCooldown -= delta;
+                    
+                    if (npc.parentGrp.userData.shootCooldown <= 0) {
+                        npc.parentGrp.userData.shootCooldown = 1.5 + Math.random() * 1.0;
+                        
+                        const npcHeadPos = new THREE.Vector3();
+                        npc.head.getWorldPosition(npcHeadPos);
+                        const mBodyPos = new THREE.Vector3();
+                        closestMonster.bodyMesh.getWorldPosition(mBodyPos);
+                        
+                        drawLaserBeam(npcHeadPos, mBodyPos, 0xff0044);
+                        sfxSound(500, 0.05, 'triangle', 0.03);
+                        
+                        closestMonster.hp -= 5;
+                        closestMonster.flashTimer = 0.15;
+                        
+                        if (closestMonster.hp <= 0) {
+                            money += 25000;
+                            document.getElementById('money-display').innerText = `Rp ${money.toLocaleString('id-ID')}`;
+                            showNotification("MONSTER DIKALAHKAN OLEH WARGA! +Rp 25.000");
+                            sfxLevel();
+                            
+                            scene.remove(closestMonster.mesh);
+                            const mIdx = monsters.indexOf(closestMonster);
+                            if (mIdx > -1) monsters.splice(mIdx, 1);
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     // Gravity & Jumping update
     const mountH = getMountainHeightAt(camera.position.x, camera.position.z);
