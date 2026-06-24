@@ -274,3 +274,18 @@ body::after {
     88% { transform: translate(6px, 4px) skew(-3.5deg) scaleX(0.97); filter: hue-rotate(50deg) saturate(1.8); }
     89% { transform: translate(0, 0) skew(0deg); filter: hue-rotate(0deg) contrast(1) brightness(1); }
 }
+
+/* Minimap Radar (Circular Cyber Style) */
+#minimap {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 180px;
+    height: 180px;
+    border: 3px solid #ff1d8e;
+    background: rgba(8, 5, 20, 0.85);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(255, 29, 142, 0.5);
+    z-index: 12;
+    pointer-events: none;
+}

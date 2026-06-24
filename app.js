@@ -526,6 +526,172 @@ createBuilding(-120, -120, 25, 40, 25, 0x150d15, "SHELTER C", "#150d15", "#ffff0
 createBuilding(120, -120, 20, 35, 20, 0x0a101a, "KANTOR D", "black", "#ff0055");
 createBuilding(-70, -150, 30, 28, 20, 0x0d0d15, "GUDANG E", "black", "#00ffaa");
 
+// === RADAR MINIMAP RENDERING ===
+const miniCanvas = document.getElementById('minimap');
+const miniCtx = miniCanvas ? miniCanvas.getContext('2d') : null;
+
+function drawMinimap() {
+    if (!miniCtx) return;
+    
+    // Clear canvas
+    miniCtx.fillStyle = 'rgba(8, 5, 20, 0.85)';
+    miniCtx.fillRect(0, 0, 180, 180);
+    
+    const playerPos = camera.position;
+    const miniScale = 0.8; // Zoom level: 1 unit = 0.8px
+    
+    // Save state for circular clipping
+    miniCtx.save();
+    
+    // Create circular path
+    miniCtx.beginPath();
+    miniCtx.arc(90, 90, 80, 0, Math.PI * 2);
+    miniCtx.clip();
+    
+    // Draw scrolling grid
+    const gridSpacing = 40;
+    const offsetX = (playerPos.x * miniScale) % gridSpacing;
+    const offsetZ = (playerPos.z * miniScale) % gridSpacing;
+    
+    miniCtx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+    miniCtx.lineWidth = 1;
+    for (let x = -offsetX; x < 180; x += gridSpacing) {
+        miniCtx.beginPath(); miniCtx.moveTo(x, 0); miniCtx.lineTo(x, 180); miniCtx.stroke();
+    }
+    for (let z = -offsetZ; z < 180; z += gridSpacing) {
+        miniCtx.beginPath(); miniCtx.moveTo(0, z); miniCtx.lineTo(180, z); miniCtx.stroke();
+    }
+    
+    // Draw sea & beach relative to player
+    const seaY = 90 + (-180 - playerPos.z) * miniScale;
+    if (seaY > 0) {
+        miniCtx.fillStyle = 'rgba(0, 95, 115, 0.3)';
+        miniCtx.fillRect(0, 0, 180, seaY);
+    }
+    
+    const beachYStart = 90 + (-180 - playerPos.z) * miniScale;
+    const beachYEnd = 90 + (-155 - playerPos.z) * miniScale;
+    if (beachYEnd > 0) {
+        miniCtx.fillStyle = 'rgba(74, 59, 44, 0.4)';
+        miniCtx.fillRect(0, Math.max(0, beachYStart), 180, beachYEnd - Math.max(0, beachYStart));
+    }
+    
+    // Draw asphalt roads relative to player
+    miniCtx.fillStyle = 'rgba(30, 26, 44, 0.9)';
+    // Z-road at x=0
+    const roadZX = 90 + (0 - playerPos.x - 15) * miniScale;
+    miniCtx.fillRect(roadZX, 0, 30 * miniScale, 180);
+    // X-road at z=0
+    const roadXY = 90 + (0 - playerPos.z - 15) * miniScale;
+    miniCtx.fillRect(0, roadXY, 180, 30 * miniScale);
+    
+    // Draw buildings relative to player
+    const buildingsMap = [
+        { name: "IN", x: -40, z: -40, w: 25, d: 20, col: '#00f0ff' }, // Indomaret
+        { name: "AL", x: 40, z: -40, w: 25, d: 20, col: '#ff1d8e' },  // Alfamart
+        { name: "PG", x: -60, z: 40, w: 30, d: 30, col: '#a000c8' },  // Pasar Gelap
+        { name: "WN", x: 50, z: 60, w: 20, d: 20, col: '#00ffaa' },   // Warnet
+        { name: "DI", x: 0, z: 80, w: 20, d: 20, col: '#ff00ff' },    // Disco
+        { name: "WK", x: -20, z: 0, w: 15, d: 15, col: '#ff7700' },   // Warkop
+        { name: "ML", x: -100, z: -80, w: 50, d: 40, col: '#ffff00' }, // Mall
+        { name: "CS", x: 90, z: -60, w: 30, d: 30, col: '#ff0033' }   // Circus
+    ];
+    
+    buildingsMap.forEach(b => {
+        const bx = 90 + (b.x - playerPos.x - b.w/2) * miniScale;
+        const bz = 90 + (b.z - playerPos.z - b.d/2) * miniScale;
+        
+        miniCtx.strokeStyle = b.col;
+        miniCtx.lineWidth = 1.5;
+        miniCtx.strokeRect(bx, bz, b.w * miniScale, b.d * miniScale);
+        
+        // Draw initials inside building
+        miniCtx.fillStyle = b.col;
+        miniCtx.font = 'bold 10px "VT323", monospace';
+        miniCtx.textAlign = 'center';
+        miniCtx.textBaseline = 'middle';
+        miniCtx.fillText(b.name, bx + (b.w * miniScale)/2, bz + (b.d * miniScale)/2);
+    });
+    
+    // Draw gold rings
+    miniCtx.fillStyle = '#ffaa00';
+    ringObjects.forEach(r => {
+        const rx = 90 + (r.position.x - playerPos.x) * miniScale;
+        const rz = 90 + (r.position.z - playerPos.z) * miniScale;
+        miniCtx.beginPath();
+        miniCtx.arc(rx, rz, 1.5, 0, Math.PI * 2);
+        miniCtx.fill();
+    });
+    
+    // Draw warga (NPCs) (Green dots)
+    miniCtx.fillStyle = '#00ffaa';
+    interactables.forEach(npc => {
+        if (npc.type === 'npc' && npc.parentGrp) {
+            const nx = 90 + (npc.parentGrp.position.x - playerPos.x) * miniScale;
+            const nz = 90 + (npc.parentGrp.position.z - playerPos.z) * miniScale;
+            miniCtx.beginPath();
+            miniCtx.arc(nx, nz, 2, 0, Math.PI * 2);
+            miniCtx.fill();
+        }
+    });
+    
+    // Draw monsters (Crimson blinking dots)
+    const mFlash = (Math.floor(Date.now() / 250) % 2 === 0);
+    miniCtx.fillStyle = mFlash ? '#ff0033' : '#770011';
+    monsters.forEach(m => {
+        if (m.mesh) {
+            const mx = 90 + (m.mesh.position.x - playerPos.x) * miniScale;
+            const mz = 90 + (m.mesh.position.z - playerPos.z) * miniScale;
+            miniCtx.beginPath();
+            miniCtx.arc(mx, mz, 3.5, 0, Math.PI * 2);
+            miniCtx.fill();
+        }
+    });
+    
+    // Restore clipping path
+    miniCtx.restore();
+    
+    // Draw central player pointer (Fixed yellow triangle at center, rotating with camera)
+    const fDir = new THREE.Vector3();
+    camera.getWorldDirection(fDir);
+    const angle = Math.atan2(fDir.x, fDir.z);
+    
+    miniCtx.save();
+    miniCtx.translate(90, 90);
+    miniCtx.rotate(angle);
+    
+    miniCtx.fillStyle = '#ffff00';
+    miniCtx.beginPath();
+    miniCtx.moveTo(0, 6);
+    miniCtx.lineTo(-4, -4);
+    miniCtx.lineTo(4, -4);
+    miniCtx.closePath();
+    miniCtx.fill();
+    
+    miniCtx.strokeStyle = '#ffff00';
+    miniCtx.lineWidth = 1;
+    miniCtx.beginPath(); miniCtx.moveTo(0, 0); miniCtx.lineTo(0, 9); miniCtx.stroke();
+    
+    miniCtx.restore();
+    
+    // Draw circular radar border and compass directions
+    miniCtx.strokeStyle = '#ff1d8e';
+    miniCtx.lineWidth = 3;
+    miniCtx.beginPath();
+    miniCtx.arc(90, 90, 80, 0, Math.PI * 2);
+    miniCtx.stroke();
+    
+    // Draw Compass directions (N, E, S, W)
+    miniCtx.fillStyle = '#00f0ff';
+    miniCtx.font = 'bold 15px "VT323", monospace';
+    miniCtx.textAlign = 'center';
+    miniCtx.textBaseline = 'middle';
+    miniCtx.fillText('N', 90, 16);
+    miniCtx.fillText('S', 90, 164);
+    miniCtx.fillText('W', 16, 90);
+    miniCtx.fillText('E', 164, 90);
+}
+
 // Sawah
 const sawahMat = new THREE.MeshStandardMaterial({ color: 0x00f0ff, wireframe: true });
 const sawah = new THREE.Mesh(new THREE.PlaneGeometry(150, 150, 20, 20), sawahMat);
@@ -1968,6 +2134,7 @@ function animate() {
             sfx.play('coin');
         }
     }
+    drawMinimap();
     renderer.render(scene, camera);
 }
 
