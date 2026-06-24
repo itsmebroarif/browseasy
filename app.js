@@ -35,9 +35,10 @@ function sfxInteract() { sfxSound(500, 0.08, 'sine', 0.04); setTimeout(() => sfx
 function sfxLevel() { [600, 800, 1000, 1200].forEach((f, i) => setTimeout(() => sfxSound(f, 0.12, 'square', 0.05), i * 70)); }
 
 const scene = new THREE.Scene();
-// Horror hot pink sky and background
-scene.background = new THREE.Color(0xff1d8e);
-scene.fog = new THREE.FogExp2(0xff1d8e, 0.012);
+// Extremely gloomy dark violet/black sky and background
+const gloomyColor = 0x07010a;
+scene.background = new THREE.Color(gloomyColor);
+scene.fog = new THREE.FogExp2(gloomyColor, 0.026);
 
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 2, 10);
@@ -75,13 +76,135 @@ controls.addEventListener('unlock', () => {
     setTimeout(() => { lockCooldown = false; cooldownText.style.display = 'none'; }, 1300);
 });
 
-// Dark blue ambient and directional light (Gloomy settings)
-scene.add(new THREE.AmbientLight(0x02020f, 0.35));
-const moonLight = new THREE.DirectionalLight(0x010411, 0.45); 
+// Dark blue ambient and directional light (Even gloomier settings)
+scene.add(new THREE.AmbientLight(0x010108, 0.08));
+const moonLight = new THREE.DirectionalLight(0x01020d, 0.15); 
 moonLight.position.set(100, 200, 50); moonLight.castShadow = true;
 moonLight.shadow.camera.left = -200; moonLight.shadow.camera.right = 200;
 moonLight.shadow.camera.top = 200; moonLight.shadow.camera.bottom = -200;
 scene.add(moonLight);
+
+// Red Matrix Sky Dome
+const skyCanvas = document.createElement('canvas');
+skyCanvas.width = 512;
+skyCanvas.height = 512;
+const skyCtx = skyCanvas.getContext('2d');
+const skyTex = new THREE.CanvasTexture(skyCanvas);
+skyTex.wrapS = THREE.RepeatWrapping;
+skyTex.wrapT = THREE.RepeatWrapping;
+skyTex.repeat.set(6, 4);
+
+const skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, fog: false });
+const skyMesh = new THREE.Mesh(new THREE.SphereGeometry(450, 32, 15), skyMat);
+scene.add(skyMesh);
+
+const skyColumns = 32;
+const skyDrops = new Array(skyColumns).fill(0);
+const skyFontSize = 16;
+
+function updateSkyMatrix() {
+    skyCtx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+    skyCtx.fillRect(0, 0, 512, 512);
+    
+    skyCtx.fillStyle = '#ff0033';
+    skyCtx.font = `bold ${skyFontSize}px monospace`;
+    
+    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$#@%&+-/*";
+    for (let i = 0; i < skyColumns; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * (512 / skyColumns);
+        const y = skyDrops[i] * skyFontSize;
+        skyCtx.fillText(char, x, y);
+        
+        if (y > 512 && Math.random() > 0.975) {
+            skyDrops[i] = 0;
+        }
+        skyDrops[i]++;
+    }
+    skyTex.needsUpdate = true;
+}
+
+let lastSkyMatrixTime = 0;
+function tickSkyMatrix(time) {
+    if (time - lastSkyMatrixTime < 33) return; // 30 FPS throttle
+    lastSkyMatrixTime = time;
+    updateSkyMatrix();
+}
+
+// Creepy Smiley Sun Sprite
+function createSunTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 256, 256);
+    
+    // Outer glowing corona
+    const grad = ctx.createRadialGradient(128, 128, 20, 128, 128, 120);
+    grad.addColorStop(0, 'rgba(255, 0, 51, 1)');
+    grad.addColorStop(0.3, 'rgba(255, 0, 80, 0.85)');
+    grad.addColorStop(0.7, 'rgba(150, 0, 50, 0.45)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(128, 128, 120, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Dark body of the sun
+    ctx.fillStyle = '#0a000c';
+    ctx.beginPath();
+    ctx.arc(128, 128, 80, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Border outline
+    ctx.strokeStyle = '#ff0033';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    
+    // Smile :)
+    ctx.fillStyle = '#ff0033';
+    ctx.font = 'bold 90px "VT323", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = '#00f0ff';
+    ctx.shadowBlur = 10;
+    ctx.fillText(':)', 128, 128);
+    
+    return new THREE.CanvasTexture(canvas);
+}
+
+const sunMat = new THREE.SpriteMaterial({
+    map: createSunTexture(),
+    color: 0xffffff,
+    fog: false
+});
+const sunSprite = new THREE.Sprite(sunMat);
+sunSprite.position.set(100, 220, -150);
+sunSprite.scale.set(65, 65, 1);
+scene.add(sunSprite);
+
+// Generate Film Grain noise dynamically
+function initFilmGrain() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.createImageData(128, 128);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        const val = Math.floor(Math.random() * 255);
+        data[i] = val;
+        data[i + 1] = val;
+        data[i + 2] = val;
+        data[i + 3] = 70; // opacity of the noise grain pixels (increased for thicker noise)
+    }
+    ctx.putImageData(imgData, 0, 0);
+    const overlay = document.getElementById('grain-overlay');
+    if (overlay) {
+        overlay.style.backgroundImage = `url(${canvas.toDataURL()})`;
+    }
+}
+initFilmGrain();
 
 // Point lights
 const pointLight1 = new THREE.PointLight(0x00f0ff, 1.5, 60); pointLight1.position.set(-20, 5, -20); scene.add(pointLight1);
@@ -1218,6 +1341,11 @@ function animate() {
     
     // Update matrix rain
     updateMatrix(elapsedTime * 1000);
+    tickSkyMatrix(elapsedTime * 1000);
+
+    // Sun scale pulse
+    const pulseFactor = 1 + Math.sin(elapsedTime * 2.5) * 0.06;
+    sunSprite.scale.set(65 * pulseFactor, 65 * pulseFactor, 1);
 
     // Gravity & Jumping update
     const mountH = getMountainHeightAt(camera.position.x, camera.position.z);
