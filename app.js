@@ -76,8 +76,7 @@ camera.position.set(0, 2, 10);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setClearColor(0x000000, 0); 
 renderer.setSize(window.innerWidth, window.innerHeight); 
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = false;
 document.body.appendChild(renderer.domElement); 
 renderer.domElement.id = 'game-canvas';
 
@@ -108,12 +107,21 @@ controls.addEventListener('unlock', () => {
 });
 
 // Dark blue ambient and directional light (Even gloomier settings)
-scene.add(new THREE.AmbientLight(0x010108, 0.08));
-const moonLight = new THREE.DirectionalLight(0x01020d, 0.15); 
-moonLight.position.set(100, 200, 50); moonLight.castShadow = true;
-moonLight.shadow.camera.left = -200; moonLight.shadow.camera.right = 200;
-moonLight.shadow.camera.top = 200; moonLight.shadow.camera.bottom = -200;
+scene.add(new THREE.AmbientLight(0x010108, 0.02));
+const moonLight = new THREE.DirectionalLight(0x01020d, 0.03); 
+moonLight.position.set(100, 200, 50);
 scene.add(moonLight);
+
+// Player Flashlight Headlamp SpotLight (attached to camera)
+const headlamp = new THREE.SpotLight(0xffffff, 4.0, 110, Math.PI / 5, 0.5, 1.2);
+headlamp.position.set(0, 0, 0);
+camera.add(headlamp);
+scene.add(camera);
+
+const headlampTarget = new THREE.Object3D();
+headlampTarget.position.set(0, 0, -1);
+camera.add(headlampTarget);
+headlamp.target = headlampTarget;
 
 // Red Matrix Sky Dome
 const skyCanvas = document.createElement('canvas');
@@ -1489,41 +1497,85 @@ const gravityVal = 22;
 const jumpImpulse = 9.0;
 function renderPistol() {
   pCx.clearRect(0, 0, 240, 240);
-  let recoil = 0;
-  if (shootT > 0) {
-    recoil = Math.sin((shootT / 0.25) * Math.PI) * 20;
-  }
+  
+  const slideRecoil = shootT > 0 ? Math.sin((shootT / 0.25) * Math.PI) * 18 : 0;
+  const recoilY = shootT > 0 ? Math.sin((shootT / 0.25) * Math.PI) * 10 : 0;
   const holsterOffset = holsterT * 260;
-  const gunX = 75;
-  const gunY = 85 + recoil + holsterOffset;
+  
+  const gunX = 100;
+  const gunY = 120 + recoilY + holsterOffset;
 
-  // Muzzle flash
+  // 1. Arm / Sleeve (Static)
+  pCx.fillStyle = '#15061b'; // Cyber purple sleeve
+  pCx.fillRect(gunX + 38, gunY + 72, 75, 75);
+  pCx.fillStyle = '#222'; // Glove cuff
+  pCx.fillRect(gunX + 38, gunY + 66, 75, 6);
+
+  // 2. Gun Frame (Static relative to slide)
+  pCx.fillStyle = '#1a1a1a'; // Dark polymer grip
+  pCx.fillRect(gunX + 35, gunY - 6, 34, 80);
+  pCx.fillStyle = '#0f0f14'; // Grip panel texture
+  pCx.fillRect(gunX + 39, gunY + 4, 26, 60);
+
+  // Trigger guard
+  pCx.strokeStyle = '#555555';
+  pCx.lineWidth = 3;
+  pCx.strokeRect(gunX + 12, gunY + 4, 20, 16);
+  // Trigger
+  pCx.strokeStyle = '#bdc3c7';
+  pCx.lineWidth = 2;
+  pCx.beginPath(); pCx.moveTo(gunX + 28, gunY + 6); pCx.lineTo(gunX + 22, gunY + 12); pCx.stroke();
+
+  // Dark metal receiver frame
+  pCx.fillStyle = '#3a3a42';
+  pCx.fillRect(gunX - 42, gunY - 6, 110, 12);
+
+  // 3. Slide (Recoils)
+  const sx = gunX - 48 + slideRecoil;
+  const sy = gunY - 26;
+
+  // Slide main body (Metallic chrome)
+  pCx.fillStyle = '#7f8c8d'; // Silver base
+  pCx.fillRect(sx, sy, 122, 20);
+  pCx.fillStyle = '#95a5a6'; // Top highlight
+  pCx.fillRect(sx, sy, 122, 5);
+  pCx.fillStyle = '#2c3e50'; // Bottom shadow bevel
+  pCx.fillRect(sx, sy + 18, 122, 2);
+
+  // Barrel tip detail (Muzzle)
+  pCx.fillStyle = '#555';
+  pCx.fillRect(sx, sy + 5, 4, 10);
+
+  // Ejection Port
+  pCx.fillStyle = '#111';
+  pCx.fillRect(sx + 75, sy + 3, 16, 5);
+
+  // Slide serrations
+  pCx.fillStyle = '#555';
+  pCx.fillRect(sx + 104, sy + 5, 2, 12);
+  pCx.fillRect(sx + 108, sy + 5, 2, 12);
+  pCx.fillRect(sx + 112, sy + 5, 2, 12);
+
+  // Front Sight Post
+  pCx.fillStyle = '#333';
+  pCx.fillRect(sx + 6, sy - 4, 3, 4);
+
+  // 4. Muzzle Flash
   if (shootT > 0.15) {
-    pCx.fillStyle = '#ffaa00';
+    pCx.fillStyle = '#ff6600';
     pCx.beginPath();
-    pCx.arc(gunX + 35, gunY - 20, 28, 0, Math.PI * 2);
+    pCx.arc(sx - 25, sy + 10, 32, 0, Math.PI * 2);
+    pCx.fill();
+
+    pCx.fillStyle = '#ffff66';
+    pCx.beginPath();
+    pCx.arc(sx - 20, sy + 10, 16, 0, Math.PI * 2);
     pCx.fill();
     pCx.fillStyle = '#ffffff';
     pCx.beginPath();
-    pCx.arc(gunX + 35, gunY - 20, 12, 0, Math.PI * 2);
+    pCx.arc(sx - 15, sy + 10, 8, 0, Math.PI * 2);
     pCx.fill();
   }
-
-  // Pistol body
-  pCx.fillStyle = '#22222e';
-  pCx.fillRect(gunX, gunY, 50, 110);
-  pCx.fillStyle = '#111116';
-  pCx.fillRect(gunX + 10, gunY - 25, 30, 25); // slide
-  pCx.fillStyle = '#ff1d8e';
-  pCx.fillRect(gunX + 23, gunY - 32, 4, 7); // cyber red dot sight
-
-  // Grip
-  pCx.fillStyle = '#08080c';
-  pCx.fillRect(gunX + 12, gunY + 80, 42, 80);
-
-  // Arm
-  pCx.fillStyle = '#1c0824'; // Cyber purple sleeve
-  pCx.fillRect(gunX + 22, gunY + 115, 80, 80);
 }
 
 // === PISTOL SHOOT LOGIC ===
@@ -1721,19 +1773,21 @@ mCa.style.zIndex = '2';
 mCa.style.pointerEvents = 'none';
 mCa.style.opacity = '0.15';
 mCa.style.imageRendering = 'pixelated';
+mCa.style.transform = 'scale(1.15)'; // Zooms matrix canvas overlay
+mCa.style.transformOrigin = 'center';
 document.body.appendChild(mCa);
 
 const mCx = mCa.getContext('2d');
 let mWidth = mCa.width = window.innerWidth / 2;
 let mHeight = mCa.height = window.innerHeight / 2;
 
-const matrixFontSize = 12;
+const matrixFontSize = 20; // Zoomed in characters
 let matrixColumns = Math.floor(mWidth / matrixFontSize);
 const matrixDrops = new Array(matrixColumns).fill(0);
 
 let lastMatrixTime = 0;
 function updateMatrix(time) {
-    if (time - lastMatrixTime < 50) return; // 20 FPS throttle
+    if (time - lastMatrixTime < 22) return; // Faster/denser update (~45 FPS)
     lastMatrixTime = time;
     
     mCx.fillStyle = 'rgba(0, 0, 0, 0.08)';

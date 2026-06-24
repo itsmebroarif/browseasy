@@ -51,6 +51,14 @@ body::after {
     cursor: crosshair; 
     background: transparent; 
     animation: crtGlitch 1.5s infinite;
+    
+    /* CRT screen bulging bezel effect */
+    border: 14px solid #1c1c1c;
+    border-radius: 40px;
+    box-sizing: border-box;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.95), 0 0 25px rgba(255, 29, 142, 0.25);
+    transform: scale(1.03);
+    transform-origin: center;
 }
 
 /* Crosshair */
