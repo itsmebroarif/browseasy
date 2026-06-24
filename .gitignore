@@ -1,0 +1,11 @@
+# Ignore temp and stack dump files
+UsersARIFAL~1AppDataLocalTempopencode_check.js
+grep.exe.stackdump
+*.stackdump
+.agents/
+.gemini/
+node_modules/
+dist/
+build/
+.DS_Store
+Thumbs.db

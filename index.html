@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daijoubu Yuki?</title>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="crosshair"></div>
+
+    <div id="hud">
+        <div class="dr-box hud-panel">
+            <div class="stat-title">NILAI TUKAR</div>
+            <div class="stat-value" id="money-display">Rp 0</div>
+        </div>
+        <div class="dr-box hud-panel" style="text-align: right;">
+            <div class="stat-title">CINCIN HALUSINASI</div>
+            <div class="stat-value" id="ring-display" style="color: #ffaa00;">0</div>
+        </div>
+    </div>
+
+    <!-- Sticky Note Controls -->
+    <div id="sticky-note">
+        <h3>KONTROL SIMULATOR</h3>
+        <ul>
+            <li>[W][A][S][D] - Gerak</li>
+            <li>[SHIFT] - Lari Cepat</li>
+            <li>[SPACE] - Lompat</li>
+            <li>[Q] - Tembak Pistol</li>
+            <li>[H] / [1] - Holster Senjata</li>
+            <li>[E] - Interaksi / Bicara</li>
+            <li>[P] / [~] - Dev Mode</li>
+            <li>[Mouse] - Arah Kamera</li>
+            <li>Klik layar - Masuk Game</li>
+        </ul>
+    </div>
+
+    <!-- NPC Floating Tooltip -->
+    <div id="npc-tooltip">...</div>
+
+    <!-- RPG Dialog Box -->
+    <div id="dialog-box" class="dr-box">
+        <div id="dialog-speaker"></div>
+        <div id="dialog-text"></div>
+    </div>
+
+    <!-- Center UI for Serving & Coding -->
+    <div id="center-ui" class="dr-box">
+        <div id="center-title" style="color: red;">Judul</div>
+        <div id="center-content">
+            <!-- Dynamic Content goes here -->
+        </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <div id="instructions">
+        <h1 id="brand">DAIJOUBU YUKI?</h1>
+        <h2>Semuanya baik-baik saja.</h2>
+        <p>Klik di mana saja untuk masuk.</p>
+        <br>
+        <p class="cooldown-msg" id="cooldown-text">Mata mereka sedang mengawasimu. Tunggu sebentar...</p>
+    </div>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
