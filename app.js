@@ -266,10 +266,11 @@ const interactables = [];
 const ringObjects = [];
 const mapSize = 600;
 
-// Ground (Brighter Cyber Ground)
-const dirtMat = new THREE.MeshStandardMaterial({ map: createCorruptedTexture('#0f0b26', '#3c0a5c'), roughness: 0.8 });
+// Ground (Perfect Black & White Chessboard Floor, Glowing Bright)
+const groundTex = createChessboardTexture('#000000', '#ffffff', 40, 40);
+const dirtMat = new THREE.MeshBasicMaterial({ map: groundTex });
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(mapSize, mapSize), dirtMat);
-ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+ground.rotation.x = -Math.PI / 2; scene.add(ground);
 
 function createChessboardTexture(color1, color2, repeatX, repeatY) {
     const canvas = document.createElement('canvas'); 
@@ -290,14 +291,14 @@ function createChessboardTexture(color1, color2, repeatX, repeatY) {
     return tex;
 }
 
-// Asphalt Chessboard Roads (Black & Grey)
-const roadZTex = createChessboardTexture('#151515', '#666666', 2, 40);
-const roadZMat = new THREE.MeshStandardMaterial({ map: roadZTex, roughness: 0.6 });
+// Asphalt Chessboard Roads (Perfect Black & White, Glowing Bright)
+const roadZTex = createChessboardTexture('#000000', '#ffffff', 2, 40);
+const roadZMat = new THREE.MeshBasicMaterial({ map: roadZTex });
 const roadZ = new THREE.Mesh(new THREE.PlaneGeometry(30, mapSize), roadZMat);
 roadZ.rotation.x = -Math.PI / 2; roadZ.position.y = 0.05; scene.add(roadZ);
 
-const roadXTex = createChessboardTexture('#151515', '#666666', 40, 2);
-const roadXMat = new THREE.MeshStandardMaterial({ map: roadXTex, roughness: 0.6 });
+const roadXTex = createChessboardTexture('#000000', '#ffffff', 40, 2);
+const roadXMat = new THREE.MeshBasicMaterial({ map: roadXTex });
 const roadX = new THREE.Mesh(new THREE.PlaneGeometry(mapSize, 30), roadXMat);
 roadX.rotation.x = -Math.PI / 2; roadX.position.y = 0.06; scene.add(roadX);
 
