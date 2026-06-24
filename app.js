@@ -907,9 +907,11 @@ function createCreepyNPC(x, z, name, role, dialogueStr, cColor, hcColor, isCusto
       emissive: new THREE.Color(cColor[0]/255, cColor[1]/255, cColor[2]/255),
       emissiveIntensity: 0.8,
       roughness: 0.7 
-    }) : bodyMat;
+    }) : bodyMat.clone();
     
     const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2, 1.2), customBodyMat);
+    body.userData.originalEmissive = new THREE.Color(customBodyMat.emissive);
+    
     const head = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 1.1), faceMat);
     head.position.y = 1.55;
     const npcGrp = new THREE.Group();
@@ -930,9 +932,63 @@ function createCreepyNPC(x, z, name, role, dialogueStr, cColor, hcColor, isCusto
         mesh: body, head: head, type: 'npc', 
         name: name, role: role,
         dialogue: dialogueStr, isCustomer: isCustomer,
-        parentGrp: npcGrp
+        parentGrp: npcGrp,
+        hp: 50,
+        flashTimer: 0
     });
     interactables.push({ mesh: head, parentGrp: body });
+}
+
+function killNPC(npc) {
+    if (!npc) return;
+    showNotification(`Warga ${npc.name} gugur...`);
+    sfxSound(120, 0.4, 'sawtooth', 0.5); // retro death sound
+    
+    if (npc.parentGrp) {
+        scene.remove(npc.parentGrp);
+    }
+    
+    const idx = interactables.findIndex(i => i === npc || i.mesh === npc.mesh);
+    if (idx > -1) {
+        interactables.splice(idx, 1);
+    }
+    for (let i = interactables.length - 1; i >= 0; i--) {
+        if (interactables[i].parentGrp === npc.mesh || interactables[i].mesh === npc.head || (npc.parentGrp && interactables[i].parentGrp === npc.parentGrp)) {
+            interactables.splice(i, 1);
+        }
+    }
+}
+
+function spawnNewCitizen() {
+    if (extraNames.length === 0 || extraRoles.length === 0) return;
+    const name = extraNames[Math.floor(Math.random() * extraNames.length)] + " " + Math.floor(Math.random() * 100);
+    const role = extraRoles[Math.floor(Math.random() * extraRoles.length)];
+    const color = [
+        Math.floor(100 + Math.random() * 155),
+        Math.floor(100 + Math.random() * 155),
+        Math.floor(100 + Math.random() * 155)
+    ];
+    const hairColor = [
+        Math.floor(50 + Math.random() * 150),
+        Math.floor(50 + Math.random() * 150),
+        Math.floor(50 + Math.random() * 150)
+    ];
+    const dialogue = creepyDialogues[Math.floor(Math.random() * creepyDialogues.length)];
+    
+    // Spawn outside of warkop center (-20, 0, 10)
+    let tx = (Math.random() - 0.5) * 260;
+    let tz = (Math.random() - 0.5) * 260;
+    
+    // Ensure it's not too close to player
+    const playerPos = camera.position;
+    const distToPlayer = Math.sqrt((tx - playerPos.x)**2 + (tz - playerPos.z)**2);
+    if (distToPlayer < 30) {
+        tx += (tx > playerPos.x ? 30 : -30);
+        tz += (tz > playerPos.z ? 30 : -30);
+    }
+    
+    createCreepyNPC(tx, tz, name, role, dialogue, color, hairColor, false);
+    showNotification(`Warga baru ${name} tiba untuk membantu!`);
 }
 
 // Spawn exactly 50 NPCs from NPC_DATA
@@ -1471,17 +1527,17 @@ const pContainer = document.createElement('div');
 pContainer.id = 'pistol-container';
 pContainer.style.position = 'absolute';
 pContainer.style.bottom = '0';
-pContainer.style.right = '10%';
+pContainer.style.right = '12%';
 pContainer.style.zIndex = '15';
 pContainer.style.pointerEvents = 'none';
-pContainer.style.width = '240px';
-pContainer.style.height = '240px';
+pContainer.style.width = '300px';
+pContainer.style.height = '300px';
 document.body.appendChild(pContainer);
 
 const pCa = document.createElement('canvas');
 pCa.id = 'pistol-canvas';
-pCa.width = 240;
-pCa.height = 240;
+pCa.width = 300;
+pCa.height = 300;
 pCa.style.width = '100%';
 pCa.style.height = '100%';
 pContainer.appendChild(pCa);
@@ -1496,84 +1552,178 @@ let verticalVelocity = 0;
 const gravityVal = 22;
 const jumpImpulse = 9.0;
 function renderPistol() {
-  pCx.clearRect(0, 0, 240, 240);
+  pCx.clearRect(0, 0, 300, 300);
   
-  const slideRecoil = shootT > 0 ? Math.sin((shootT / 0.25) * Math.PI) * 18 : 0;
-  const recoilY = shootT > 0 ? Math.sin((shootT / 0.25) * Math.PI) * 10 : 0;
-  const holsterOffset = holsterT * 260;
+  const holsterOffset = holsterT * 320;
   
-  const gunX = 100;
-  const gunY = 120 + recoilY + holsterOffset;
-
-  // 1. Arm / Sleeve (Static)
-  pCx.fillStyle = '#15061b'; // Cyber purple sleeve
-  pCx.fillRect(gunX + 38, gunY + 72, 75, 75);
-  pCx.fillStyle = '#222'; // Glove cuff
-  pCx.fillRect(gunX + 38, gunY + 66, 75, 6);
-
-  // 2. Gun Frame (Static relative to slide)
-  pCx.fillStyle = '#1a1a1a'; // Dark polymer grip
-  pCx.fillRect(gunX + 35, gunY - 6, 34, 80);
-  pCx.fillStyle = '#0f0f14'; // Grip panel texture
-  pCx.fillRect(gunX + 39, gunY + 4, 26, 60);
-
-  // Trigger guard
-  pCx.strokeStyle = '#555555';
-  pCx.lineWidth = 3;
-  pCx.strokeRect(gunX + 12, gunY + 4, 20, 16);
-  // Trigger
-  pCx.strokeStyle = '#bdc3c7';
+  // Calculate recoil:
+  // kickY is the vertical kick of the entire gun (it kicks UPwards, so it is negative)
+  const kickY = shootT > 0 ? Math.sin((shootT / 0.25) * Math.PI) * -24 : 0;
+  
+  // slideRecoil is the slide moving back towards the viewer (downwards on the screen)
+  const slideRecoil = shootT > 0 ? Math.sin((shootT / 0.25) * Math.PI) * 22 : 0;
+  
+  const gunX = 150;
+  const gunY = 150 + kickY + holsterOffset;
+  
+  // Base dimensions relative to gunY
+  const frontY = gunY - 55;
+  const rearY = gunY + 70;
+  
+  // 1. Sleeve / Hand (background)
+  pCx.fillStyle = '#110c22'; // Dark cyber-purple sleeve
+  pCx.beginPath();
+  pCx.moveTo(gunX - 45, 300);
+  pCx.lineTo(gunX - 35, rearY + 60);
+  pCx.lineTo(gunX + 60, rearY + 60);
+  pCx.lineTo(gunX + 80, 300);
+  pCx.closePath();
+  pCx.fill();
+  
+  // Glove cuff (neon cyan strip on glove)
+  pCx.fillStyle = '#00f0ff';
+  pCx.fillRect(gunX - 40, rearY + 52, 105, 6);
+  
+  // Glove main body clutching the gun
+  pCx.fillStyle = '#22222b'; // Dark grey glove
+  pCx.beginPath();
+  pCx.moveTo(gunX - 35, rearY + 52);
+  pCx.lineTo(gunX - 25, rearY - 10);
+  pCx.lineTo(gunX + 25, rearY - 10);
+  pCx.lineTo(gunX + 60, rearY + 52);
+  pCx.closePath();
+  pCx.fill();
+  
+  // 2. Fixed Frame & Barrel (exposed when slide recoils)
+  pCx.fillStyle = '#15151c'; // Dark gunmetal
+  pCx.beginPath();
+  pCx.moveTo(gunX - 10, frontY);
+  pCx.lineTo(gunX + 10, frontY);
+  pCx.lineTo(gunX + 13, frontY + 45);
+  pCx.lineTo(gunX - 13, frontY + 45);
+  pCx.closePath();
+  pCx.fill();
+  
+  // Exposed chamber/barrel (when slide is back)
+  if (slideRecoil > 2) {
+    pCx.fillStyle = '#0a0a0f'; // Pitch black chamber interior
+    pCx.beginPath();
+    pCx.moveTo(gunX - 8, frontY + slideRecoil);
+    pCx.lineTo(gunX + 8, frontY + slideRecoil);
+    pCx.lineTo(gunX + 10, frontY + 30 + slideRecoil);
+    pCx.lineTo(gunX - 10, frontY + 30 + slideRecoil);
+    pCx.closePath();
+    pCx.fill();
+    
+    // Silver barrel slide rod/chamber highlight
+    pCx.fillStyle = '#7f8c8d';
+    pCx.fillRect(gunX - 3, frontY + 5, 6, 25);
+  }
+  
+  // 3. Recoiling Slide (moves down/back)
+  const syFront = frontY + slideRecoil;
+  const syRear = rearY + slideRecoil;
+  
+  // Slide Top Face (silver chrome)
+  pCx.fillStyle = '#bdc3c7'; // Light silver
+  pCx.beginPath();
+  pCx.moveTo(gunX - 12, syFront);
+  pCx.lineTo(gunX + 12, syFront);
+  pCx.lineTo(gunX + 20, syRear);
+  pCx.lineTo(gunX - 20, syRear);
+  pCx.closePath();
+  pCx.fill();
+  
+  // Slide Left Side Face (darker silver shadow)
+  pCx.fillStyle = '#7f8c8d';
+  pCx.beginPath();
+  pCx.moveTo(gunX - 20, syRear);
+  pCx.lineTo(gunX - 12, syFront);
+  pCx.lineTo(gunX - 18, syFront + 35);
+  pCx.lineTo(gunX - 28, syRear + 45);
+  pCx.closePath();
+  pCx.fill();
+  
+  // Slide Right Side Face (medium silver)
+  pCx.fillStyle = '#95a5a6';
+  pCx.beginPath();
+  pCx.moveTo(gunX + 12, syFront);
+  pCx.lineTo(gunX + 20, syRear);
+  pCx.lineTo(gunX + 28, syRear + 45);
+  pCx.lineTo(gunX + 18, syFront + 35);
+  pCx.closePath();
+  pCx.fill();
+  
+  // Slide Top Grooves / Details
+  pCx.strokeStyle = '#7f8c8d';
   pCx.lineWidth = 2;
-  pCx.beginPath(); pCx.moveTo(gunX + 28, gunY + 6); pCx.lineTo(gunX + 22, gunY + 12); pCx.stroke();
-
-  // Dark metal receiver frame
-  pCx.fillStyle = '#3a3a42';
-  pCx.fillRect(gunX - 42, gunY - 6, 110, 12);
-
-  // 3. Slide (Recoils)
-  const sx = gunX - 48 + slideRecoil;
-  const sy = gunY - 26;
-
-  // Slide main body (Metallic chrome)
-  pCx.fillStyle = '#7f8c8d'; // Silver base
-  pCx.fillRect(sx, sy, 122, 20);
-  pCx.fillStyle = '#95a5a6'; // Top highlight
-  pCx.fillRect(sx, sy, 122, 5);
-  pCx.fillStyle = '#2c3e50'; // Bottom shadow bevel
-  pCx.fillRect(sx, sy + 18, 122, 2);
-
-  // Barrel tip detail (Muzzle)
-  pCx.fillStyle = '#555';
-  pCx.fillRect(sx, sy + 5, 4, 10);
-
-  // Ejection Port
-  pCx.fillStyle = '#111';
-  pCx.fillRect(sx + 75, sy + 3, 16, 5);
-
-  // Slide serrations
-  pCx.fillStyle = '#555';
-  pCx.fillRect(sx + 104, sy + 5, 2, 12);
-  pCx.fillRect(sx + 108, sy + 5, 2, 12);
-  pCx.fillRect(sx + 112, sy + 5, 2, 12);
-
-  // Front Sight Post
-  pCx.fillStyle = '#333';
-  pCx.fillRect(sx + 6, sy - 4, 3, 4);
-
-  // 4. Muzzle Flash
+  for (let offset = 40; offset <= 90; offset += 10) {
+    const t = offset / 120;
+    const yVal = syFront + (syRear - syFront) * t;
+    const halfW = 12 + (20 - 12) * t;
+    pCx.beginPath();
+    pCx.moveTo(gunX - halfW + 2, yVal);
+    pCx.lineTo(gunX + halfW - 2, yVal);
+    pCx.stroke();
+  }
+  
+  // 4. Sights
+  // Rear Sight Left Notch
+  pCx.fillStyle = '#2c3e50';
+  pCx.fillRect(gunX - 22, syRear - 4, 6, 6);
+  // Rear Sight Right Notch
+  pCx.fillRect(gunX + 16, syRear - 4, 6, 6);
+  
+  // Front Sight Blade
+  pCx.fillStyle = '#1e272c';
+  pCx.fillRect(gunX - 2, syFront - 7, 4, 7);
+  
+  // Muzzle Bore
+  pCx.fillStyle = '#000000';
+  pCx.beginPath();
+  pCx.arc(gunX, syFront + 8, 5, 0, Math.PI * 2);
+  pCx.fill();
+  
+  // 5. Muzzle Flash
   if (shootT > 0.15) {
-    pCx.fillStyle = '#ff6600';
+    const flashY = frontY - 15;
+    
+    // Outer flame glow
+    const outerGrad = pCx.createRadialGradient(gunX, flashY, 2, gunX, flashY, 45);
+    outerGrad.addColorStop(0, 'rgba(255, 100, 0, 1)');
+    outerGrad.addColorStop(0.5, 'rgba(255, 50, 0, 0.6)');
+    outerGrad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    pCx.fillStyle = outerGrad;
     pCx.beginPath();
-    pCx.arc(sx - 25, sy + 10, 32, 0, Math.PI * 2);
+    pCx.arc(gunX, flashY, 45, 0, Math.PI * 2);
     pCx.fill();
-
-    pCx.fillStyle = '#ffff66';
+    
+    // Inner hot flame
+    const innerGrad = pCx.createRadialGradient(gunX, flashY, 1, gunX, flashY, 20);
+    innerGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    innerGrad.addColorStop(0.3, 'rgba(255, 255, 100, 1)');
+    innerGrad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+    pCx.fillStyle = innerGrad;
     pCx.beginPath();
-    pCx.arc(sx - 20, sy + 10, 16, 0, Math.PI * 2);
+    pCx.arc(gunX, flashY, 20, 0, Math.PI * 2);
     pCx.fill();
-    pCx.fillStyle = '#ffffff';
+    
+    // Star spikes
+    pCx.fillStyle = 'rgba(255, 255, 200, 0.9)';
     pCx.beginPath();
-    pCx.arc(sx - 15, sy + 10, 8, 0, Math.PI * 2);
+    pCx.moveTo(gunX, flashY - 40);
+    pCx.lineTo(gunX + 6, flashY);
+    pCx.lineTo(gunX, flashY + 40);
+    pCx.lineTo(gunX - 6, flashY);
+    pCx.closePath();
+    pCx.fill();
+    
+    pCx.beginPath();
+    pCx.moveTo(gunX - 40, flashY);
+    pCx.lineTo(gunX, flashY - 6);
+    pCx.lineTo(gunX + 40, flashY);
+    pCx.lineTo(gunX, flashY + 6);
+    pCx.closePath();
     pCx.fill();
   }
 }
@@ -1591,6 +1741,21 @@ function shootPistol() {
   raycaster.setFromCamera(centerVector, camera);
   const intersects = raycaster.intersectObjects(scene.children, true);
   
+  // Calculate laser destination
+  let hitPoint = null;
+  if (intersects.length > 0) {
+    hitPoint = intersects[0].point;
+  } else {
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    hitPoint = camera.position.clone().addScaledVector(dir, 100);
+  }
+  
+  // Draw player laser centered/slightly right aligned
+  const pPos = camera.position.clone();
+  const laserOrigin = pPos.add(new THREE.Vector3(0.1, -0.25, -0.5).applyQuaternion(camera.quaternion));
+  drawLaserBeam(laserOrigin, hitPoint, 0x00f0ff);
+
   if (intersects.length > 0) {
     let object = intersects[0].object;
     
@@ -1608,12 +1773,6 @@ function shootPistol() {
       hitMonster.hp -= 25;
       hitMonster.flashTimer = 0.15;
       sfxSound(180, 0.1, 'sawtooth', 0.15);
-      
-      // Draw player laser
-      const pPos = camera.position.clone();
-      const hitPoint = intersects[0].point;
-      const laserOrigin = pPos.add(new THREE.Vector3(0.5, -0.5, -0.8).applyQuaternion(camera.quaternion));
-      drawLaserBeam(laserOrigin, hitPoint, 0x00f0ff);
       
       if (hitMonster.hp <= 0) {
         money += 25000;
@@ -1662,6 +1821,8 @@ function shootPistol() {
 // === DEV MODE LOGIC ===
 let devMode = false;
 let devTimer = 0;
+let monsterSpawnTimer = 0;
+let citizenSpawnTimer = 0;
 
 function activateDevMode() {
   if (devMode) return;
@@ -1862,6 +2023,29 @@ function animate() {
     if (typeof monsters !== 'undefined') {
         const playerPos = camera.position;
         
+        // 0. Spawner Timers
+        monsterSpawnTimer += delta;
+        if (monsterSpawnTimer >= 6.0) {
+            monsterSpawnTimer = 0;
+            if (monsters.length < 15) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 60 + Math.random() * 60;
+                const mx = playerPos.x + Math.cos(angle) * dist;
+                const mz = playerPos.z + Math.sin(angle) * dist;
+                createMonster(mx, mz);
+                showNotification("Monster baru bangkit dari kegelapan!");
+            }
+        }
+        
+        citizenSpawnTimer += delta;
+        if (citizenSpawnTimer >= 10.0) {
+            citizenSpawnTimer = 0;
+            const activeNpcCount = interactables.filter(i => i.type === 'npc' && !i.isCustomer && i.parentGrp).length;
+            if (activeNpcCount < 40) {
+                spawnNewCitizen();
+            }
+        }
+
         // 1. Monster Update Loop
         for (let m = monsters.length - 1; m >= 0; m--) {
             const monster = monsters[m];
@@ -1880,6 +2064,7 @@ function animate() {
             let targetPos = playerPos;
             let minDist = playerPos.distanceTo(monster.mesh.position);
             let targetType = 'player';
+            let targetNPC = null;
             
             // Check NPC distances
             interactables.forEach(i => {
@@ -1889,6 +2074,7 @@ function animate() {
                         minDist = dist;
                         targetPos = i.parentGrp.position;
                         targetType = 'npc';
+                        targetNPC = i;
                     }
                 }
             });
@@ -1926,6 +2112,25 @@ function animate() {
                             controls.getObject().position.set(-20, 2, 10);
                         }
                         showNotification("Kamu pingsan dan terbangun kembali di warkop...");
+                    }
+                } else if (targetType === 'npc' && minDist < 4.0 && targetNPC) {
+                    if (monster.shootCooldown <= 0) {
+                        monster.shootCooldown = 1.5;
+                        
+                        targetNPC.hp -= 10;
+                        targetNPC.flashTimer = 0.25;
+                        sfxSound(150, 0.2, 'triangle', 0.15);
+                        
+                        const mHeadPos = new THREE.Vector3();
+                        monster.headMesh.getWorldPosition(mHeadPos);
+                        const nHeadPos = new THREE.Vector3();
+                        targetNPC.head.getWorldPosition(nHeadPos);
+                        
+                        drawLaserBeam(mHeadPos, nHeadPos, 0x880000); // Dark red laser
+                        
+                        if (targetNPC.hp <= 0) {
+                            killNPC(targetNPC);
+                        }
                     }
                 }
             } else {
@@ -1999,6 +2204,19 @@ function animate() {
                             const mIdx = monsters.indexOf(closestMonster);
                             if (mIdx > -1) monsters.splice(mIdx, 1);
                         }
+                    }
+                }
+            }
+        });
+
+        // 3. Tick NPC flash timers
+        interactables.forEach(i => {
+            if (i.type === 'npc' && !i.isCustomer && i.parentGrp) {
+                if (i.flashTimer > 0) {
+                    i.flashTimer -= delta;
+                    i.mesh.material.emissive.setHex(0xffffff);
+                    if (i.flashTimer <= 0) {
+                        i.mesh.material.emissive.copy(i.mesh.userData.originalEmissive);
                     }
                 }
             }
