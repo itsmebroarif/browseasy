@@ -1610,30 +1610,40 @@ function shootPistol() {
 // === DEV MODE LOGIC ===
 let devMode = false;
 let devTimer = 0;
-let devLinePos = null;
 
 function activateDevMode() {
   if (devMode) return;
   devMode = true;
-  devTimer = 3.0;
-  devLinePos = null;
+  devTimer = 6.0; // 6 seconds duration
   sfxLevel();
 
-  // Show center dialog
-  centerUI.style.display = 'flex';
-  document.getElementById('center-title').innerText = "DEVELOPER CONTROL ACTIVE";
-  document.getElementById('center-content').innerHTML = `
-    <div style="font-size: 24px; margin: 20px 0; color: #00f0ff; animation: glitch 2s infinite;">
-      "Kita kaget, kamu kok bisa punya control seperti developer?"
-    </div>
-    <div style="display: flex; justify-content: center; gap: 10px;">
-      <button class="dr-btn" onclick="endDevMode()">...</button>
-    </div>
-  `;
-}
-
-window.endDevMode = function() {
-  devTimer = 0; // instantly trigger scatter
+  // Show standard bottom typewriter dialog
+  const dialogBox = document.getElementById('dialog-box');
+  const speakerDiv = document.getElementById('dialog-speaker');
+  const textDiv = document.getElementById('dialog-text');
+  
+  if (dialogBox && speakerDiv && textDiv) {
+    dialogBox.style.display = 'block';
+    speakerDiv.innerText = "SISTEM - DEV ERROR";
+    
+    if (typewriterInterval) clearInterval(typewriterInterval);
+    const fullText = "Kita kaget... kamu kok bisa punya kontrol seperti developer?!";
+    let currentIndex = 0;
+    textDiv.innerText = "";
+    
+    typewriterInterval = setInterval(() => {
+        if (currentIndex < fullText.length) {
+            textDiv.innerText += fullText[currentIndex];
+            currentIndex++;
+            if (currentIndex % 2 === 0) {
+                sfxSound(700, 0.04, 'square', 0.03); // retro glitch beep
+            }
+        } else {
+            clearInterval(typewriterInterval);
+            typewriterInterval = null;
+        }
+    }, 35);
+  }
 }
 
 // Raycaster & Movement
@@ -1969,26 +1979,26 @@ function animate() {
 
     // Update NPCs (wandering or dev mode alignment)
     if (devMode) {
-      if (!devLinePos) {
-        const fDir = new THREE.Vector3();
-        camera.getWorldDirection(fDir);
-        const pDir = new THREE.Vector3(-fDir.z, 0, fDir.x).normalize();
-        const lineCenter = camera.position.clone().add(fDir.multiplyScalar(9));
-        lineCenter.y = 1.0;
-        devLinePos = {
-          center: lineCenter,
-          dir: pDir
-        };
-      }
       let npcIdx = 0;
+      const npcCount = 50; 
+      const circleRadius = 7.5;
+      
       interactables.forEach(i => {
         if (i.type === 'npc' && !i.isCustomer && i.parentGrp) {
-          const offset = (npcIdx - 25) * 1.5;
-          const targetPos = devLinePos.center.clone().add(devLinePos.dir.clone().multiplyScalar(offset));
-          i.parentGrp.userData.tx = targetPos.x;
-          i.parentGrp.userData.tz = targetPos.z;
-          i.parentGrp.userData.speed = 15.0; // run to line up
+          const angle = (npcIdx / npcCount) * Math.PI * 2;
+          const targetX = camera.position.x + Math.cos(angle) * circleRadius;
+          const targetZ = camera.position.z + Math.sin(angle) * circleRadius;
+          
+          i.parentGrp.userData.tx = targetX;
+          i.parentGrp.userData.tz = targetZ;
+          i.parentGrp.userData.speed = 14.0; // run fast to surround the player
           i.parentGrp.userData.pt = 0;
+          
+          // Face the player
+          const dx = camera.position.x - i.parentGrp.position.x;
+          const dz = camera.position.z - i.parentGrp.position.z;
+          i.parentGrp.rotation.y = Math.atan2(dx, dz);
+          
           npcIdx++;
         }
       });
@@ -1996,10 +2006,10 @@ function animate() {
       devTimer -= delta;
       if (devTimer <= 0) {
         devMode = false;
-        devLinePos = null;
-        centerUI.style.display = 'none';
-        isInteracting = false;
-        instructions.style.display = 'flex';
+        
+        // Hide the typewriter dialog box
+        const dialogBox = document.getElementById('dialog-box');
+        if (dialogBox) dialogBox.style.display = 'none';
         
         // Scatter NPCs
         interactables.forEach(i => {
@@ -2010,7 +2020,7 @@ function animate() {
             i.parentGrp.userData.pt = 1 + Math.random() * 3;
           }
         });
-        showNotification("NPC BUBAR JALAN!");
+        showNotification("Warga bubar...");
       }
     }
 
