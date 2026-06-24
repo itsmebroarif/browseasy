@@ -1,0 +1,1542 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<title>PixelLife - Arif's Story</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#020005;font-family:'Noto Sans','Inter','Segoe UI',sans-serif;touch-action:none;-webkit-user-select:none;user-select:none;color:#d0a0a0;-webkit-font-smoothing:antialiased;font-size:14px}
+#gc{display:block;position:fixed;top:0;left:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;z-index:0}
+#ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+#topbar{position:fixed;top:0;left:0;right:0;z-index:30;pointer-events:auto;background:rgba(2,1,4,.98);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid rgba(150,10,25,.35);padding:7px 12px 6px}
+#searchrow{display:flex;align-items:center;gap:8px}
+#brand{color:#ff4d6d;font-size:13px;font-weight:800;white-space:nowrap;background:rgba(255,77,109,.12);padding:4px 10px;border-radius:14px;border:1px solid rgba(255,77,109,.15);cursor:pointer}
+#si{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;padding:8px 14px;font-size:13px;outline:0;border-radius:20px;font-family:inherit;transition:all .2s}
+#si:focus{border-color:#ffc864;background:rgba(255,255,255,.12)}
+#si::placeholder{color:#888}
+#sgo{background:linear-gradient(135deg,#ffc864,#f0a830);border:none;color:#0a0a1a;padding:8px 18px;cursor:pointer;border-radius:20px;font-size:12px;font-weight:700;font-family:inherit;transition:transform .15s}
+#sgo:hover{transform:scale(1.05)}
+#sgo:active{transform:scale(.95)}
+#statsbar{display:flex;gap:8px;align-items:center;padding:4px 2px 3px;font-size:11px;color:#ccc;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+#statsbar span{display:inline-flex;align-items:center;gap:2px}
+#statsbar .sv{color:#fff;font-weight:700;font-size:12px}
+#sclk{color:#ccc;font-weight:500;font-size:11px}
+#swth{color:#fff;font-size:12px}
+#quickrow{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:3px 0}
+#quickrow a{text-decoration:none;color:#ddd;font-size:10px;padding:4px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;transition:all .15s;line-height:1.6}
+#quickrow a:hover{background:rgba(255,200,100,.12);border-color:rgba(255,200,100,.2);color:#ffc864}
+#curow{display:inline-flex;gap:4px;align-items:center;margin-left:auto}
+#curow input{width:80px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:#e0e0e0;padding:4px 9px;font-size:9px;outline:0;border-radius:10px;font-family:inherit}
+#curow button{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:#ddd;padding:4px 9px;cursor:pointer;border-radius:10px;font-size:9px;font-family:inherit}
+#scu{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+#scu a{text-decoration:none;color:#ccc;font-size:8px;padding:2px 7px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px}
+#bottomsheet{position:fixed;bottom:0;left:0;right:0;z-index:30;pointer-events:auto;background:rgba(3,1,5,.98);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(150,10,25,.35);border-radius:18px 18px 0 0;max-height:45vh;overflow-y:auto;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
+#bottomsheet.collapsed{max-height:36px;overflow:hidden}
+#bottomsheet::-webkit-scrollbar{width:3px}
+#bottomsheet::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px}
+#sheetbar{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;cursor:pointer;border-bottom:1px solid rgba(150,10,25,.15);position:sticky;top:0;background:rgba(3,1,5,.98);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:18px 18px 0 0}
+#sheetbar span{color:#fff;font-size:12px;font-weight:700;letter-spacing:.3px}
+#sheetbar button{background:rgba(255,255,255,.05);border:none;color:#ccc;cursor:pointer;font-size:13px;padding:2px 10px;border-radius:12px;font-family:inherit;transition:all .2s}
+#sheetbar button:hover{background:rgba(255,255,255,.1);color:#fff}
+#sheetbody{padding:0 14px 10px}
+.ps{margin-top:4px}
+.ps .psh{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:6px 0;font-size:10px;color:#ccc;letter-spacing:.3px;border-top:1px solid rgba(255,255,255,.04);transition:color .15s}
+.ps .psh:hover{color:#fff}
+.ps .psh span:first-child{text-transform:uppercase;font-weight:700;color:#ddd}
+.ps .psb{overflow:hidden;max-height:0;transition:max-height .25s ease}
+.ps .psb.open{max-height:220px}
+.tdi{display:flex;gap:4px;margin:6px 0}
+.tdi input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;padding:7px 10px;font-size:11px;outline:0;border-radius:8px;font-family:inherit}
+.tdi input:focus{border-color:rgba(255,200,100,.25)}
+.tdi button{background:rgba(255,200,100,.12);border:1px solid rgba(255,200,100,.15);color:#ffc864;padding:7px 12px;cursor:pointer;font-size:11px;border-radius:8px;font-family:inherit;font-weight:600}
+.kanban{display:flex;gap:6px;margin:4px 0;min-height:120px;align-items:stretch}
+.kanban-col{flex:1;background:rgba(255,255,255,.03);border-radius:8px;padding:5px;border:1px solid rgba(255,255,255,.06);min-width:0}
+.kanban-col .kc-h{font-size:9px;font-weight:700;text-transform:uppercase;color:#aaa;padding:2px 4px 4px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px;letter-spacing:.5px}
+.kanban-col .kc-h.pc{color:#ffc864}
+.kanban-col .kc-h.pp{color:#6ab0ff}
+.kanban-col .kc-h.pd{color:#6f6}
+.kanban-col .kc-h.pf{color:#f66}
+.klist{list-style:none;margin:0;padding:0;max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.klist li{display:flex;align-items:center;gap:4px;padding:4px 5px;font-size:10px;color:#ddd;background:rgba(255,255,255,.04);border-radius:5px;cursor:grab;transition:background .1s;border-left:2px solid rgba(255,200,100,.1)}
+.klist li:hover{background:rgba(255,255,255,.07)}
+.klist li .kt{flex:1;color:#fff;word-break:break-word;font-size:10px}
+.klist li .kt.done{text-decoration:line-through;color:#888}
+.klist li .kt.fail{text-decoration:line-through;color:#f66}
+.klist li .km{display:flex;gap:2px;flex-shrink:0}
+.klist li .km button{background:0 0;border:none;color:#666;cursor:pointer;font-size:8px;padding:2px 3px;border-radius:3px;transition:all .1s;line-height:1}
+.klist li .km button:hover{color:#fff;background:rgba(255,255,255,.08)}
+.klist li .km .kdel:hover{color:#f66;background:rgba(255,50,50,.12)}
+.klist li .km .kleft:hover{color:#ffc864}
+.klist li .km .kright:hover{color:#6ab0ff}
+.ke{font-size:9px;color:#555;text-align:center;padding:6px 0}
+.notif{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);background:rgba(3,1,5,.98);border:1px solid rgba(180,10,30,.4);padding:16px 26px;text-align:center;opacity:0;transition:opacity .25s;border-radius:16px;z-index:40;pointer-events:none;font-size:11px;color:#fff;box-shadow:0 12px 48px rgba(0,0,0,.7);max-width:80%}
+.notif.show{opacity:1}
+.notif .nt{color:#ff4d6d;font-weight:700;margin-bottom:5px;font-size:14px}
+#diabox{position:absolute;bottom:0;left:0;right:0;background:rgba(3,1,5,.98);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:2px solid rgba(180,10,30,.5);padding:16px 20px;min-height:100px;display:none;pointer-events:auto;z-index:20}
+#diabox.show{display:block}
+#diabox .d-name{color:#ff4d6d;font-size:13px;font-weight:700;letter-spacing:.3px;margin-bottom:5px}
+#diabox .d-text{color:#fff;font-size:12px;line-height:1.7;margin-bottom:10px}
+#diabox .d-opt{display:flex;flex-wrap:wrap;gap:6px}
+#diabox .d-opt button{background:rgba(180,10,30,.12);border:1px solid rgba(180,10,30,.3);color:#ccc;padding:7px 16px;font-size:10px;cursor:pointer;border-radius:16px;font-family:inherit;transition:all .15s}
+#diabox .d-opt button:hover{background:rgba(180,10,30,.25);border-color:rgba(180,10,30,.5);color:#ff6b8b}
+#diabox .d-next{background:0 0;border:none;color:#aaa;font-size:10px;cursor:pointer;padding:4px 10px;margin-top:4px}
+#diabox .d-next:hover{color:#fff}
+@media(max-width:500px){
+  #brand{font-size:11px;padding:3px 8px}
+  #si{font-size:11px;padding:6px 12px}
+  #sgo{font-size:10px;padding:6px 14px}
+  #topbar{padding:5px 8px 4px}
+  #statsbar{font-size:9px}
+  #statsbar .sv{font-size:10px}
+  #bottomsheet{max-height:50vh}
+  #bottomsheet.collapsed{max-height:32px}
+}
+</style>
+</head>
+<body>
+<canvas id="gc"></canvas>
+<div id="ui">
+  <div id="topbar">
+    <div id="searchrow">
+      <span id="brand">âœ¦ PixelLife</span>
+      <input id="si" placeholder="Cari di web..." autocomplete="off" list="suggest">
+      <datalist id="suggest">
+        <option value="Youtube">
+        <option value="Instagram">
+        <option value="WhatsApp Web">
+        <option value="GitHub">
+        <option value="Google">
+        <option value="Facebook">
+        <option value="Twitter X">
+        <option value="TikTok">
+        <option value="Shopee">
+        <option value="Tokopedia">
+        <option value="Gmail">
+        <option value="Canva">
+        <option value="ChatGPT">
+        <option value="DeepSeek">
+        <option value="PixelLife Guide">
+      </datalist>
+      <button id="sgo">GO</button>
+    </div>
+    <div id="statsbar">
+      <span>ðŸ’°<span class="sv" id="sm">5000</span></span>
+      <span>LV<span class="sv" id="slv">1</span></span>
+      <span>âš¡<span class="sv" id="sen">100</span></span>
+      <span>â¤ï¸<span class="sv" id="shp">100</span></span>
+      <span id="sclk">00:00 WIB</span>
+      <span id="swth">â˜€ï¸</span>
+      <span id="musbtn" style="cursor:pointer;font-size:11px;color:#aaa;padding:2px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.08)">ðŸŽµ OFF</span>
+    </div>
+    <div id="quickrow">
+      <a href="https://youtube.com" target="_blank">â–¶ YT</a>
+      <a href="https://instagram.com" target="_blank">ðŸ“¸ IG</a>
+      <a href="https://web.whatsapp.com" target="_blank">ðŸ’¬ WA</a>
+      <a href="https://github.com" target="_blank">ðŸ™ GH</a>
+      <a href="https://x.com" target="_blank">ðŸ¦ X</a>
+      <a href="https://stackoverflow.com" target="_blank">ðŸ“š SO</a>
+      <span id="curow">
+        <input id="sui" placeholder="+ URL">
+        <button id="sua">+</button>
+      </span>
+    </div>
+    <div id="scu"></div>
+  </div>
+  <div id="bottomsheet" class="collapsed">
+    <div id="sheetbar">
+      <span>â˜° Panel</span>
+      <button id="shide">+</button>
+    </div>
+    <div id="sheetbody">
+      <div class="ps">
+        <div class="psh" id="stt"><span>â–¸ Tugas</span><span id="stti">â–¾</span></div>
+        <div class="psb" id="sbt">
+          <div class="tdi"><input id="tdi" placeholder="Tambah tugas..."><button id="tda">+</button></div>
+          <div class="kanban" id="kanban">
+            <div class="kanban-col"><div class="kc-h pc">ðŸ“‹ Planning</div><ul class="klist" id="kl-planning"></ul></div>
+            <div class="kanban-col"><div class="kc-h pp">âš™ï¸ On Progress</div><ul class="klist" id="kl-progress"></ul></div>
+            <div class="kanban-col"><div class="kc-h pd">âœ… Done / âŒ Fail</div><ul class="klist" id="kl-done"></ul></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notif" id="notif"><div class="nt" id="nt"></div><div id="ns"></div></div>
+  <audio id="ost" loop preload="none"><source src="ost.mp3" type="audio/mpeg"></audio>
+</div>
+<div id="diabox"><div class="d-name" id="dn"></div><div class="d-text" id="dt"></div><div class="d-opt" id="dopt"></div></div>
+<script>
+// ===== CONFIG =====
+const C={W:80,H:60,T:21,WW:0,HH:0};
+const G={
+  m:5e3,lv:1,xp:0,xn:100,hp:100,en:100,me:100,
+  px:54,py:40,spd:2.2,fr:0,
+  k:{},dpd:null,proj:null,pgs:0,fld:0,
+  sk:1,fc:0,cr:0,td:[],d:1,
+  npcI:null,dlg:null,hd:0,
+  score:0,scoreRate:1,scoreMul:1,stepSfx:0,
+  mode:'topdown',angle:Math.PI/2,showCtrl:1,
+  shootT:0,devMode:false,devTimer:0,devLinePos:null,
+};
+const ITEMS=[
+  {n:'KOPI',p:8e3,c:'â˜•',d:'+20 âš¡'},
+  {n:'BENTO',p:15e3,c:'ðŸ±',d:'+30 â¤ï¸ +10 âš¡'},
+  {n:'RAMEN',p:18e3,c:'ðŸœ',d:'+25 â¤ï¸'},
+  {n:'MILK TEA',p:1e4,c:'ðŸ§‹',d:'+15 âš¡'},
+  {n:'PISAU SAKURA',p:25e3,c:'ðŸŒ¸',d:'Skill +2'},
+  {n:'LAPTOP PRO',p:1e6,c:'ðŸ’»',d:'+50% Speed'},
+  {n:'MONITOR 4K',p:5e5,c:'ðŸ–¥ï¸',d:'+30% XP'},
+];
+const PROJ=[
+  {n:'To-Do App',xp:30,pay:8e3,t:10,r:1},
+  {n:'Blog Engine',xp:60,pay:20e3,t:20,r:2},
+  {n:'E-Commerce',xp:120,pay:50e3,t:35,r:3},
+  {n:'SaaS Dashboard',xp:200,pay:100e3,t:50,r:4},
+  {n:'Game Engine',xp:350,pay:250e3,t:75,r:5},
+  {n:'AI Assistant',xp:500,pay:500e3,t:100,r:6}
+];
+// ===== CANVAS =====
+const ca=document.getElementById('gc'),cx=ca.getContext('2d');
+function resize(){
+  const r=2;
+  C.WW=Math.ceil(innerWidth/r);C.HH=Math.ceil(innerHeight/r);
+  ca.width=C.WW;ca.height=C.HH;
+  ca.style.width=innerWidth+'px';ca.style.height=innerHeight+'px';
+}
+// ===== COLORS =====
+const NEON={
+  sky:[10,5,25],grass:[20,80,35],grassD:[15,60,25],
+  path:[200,170,100],sand:[255,235,160],water:[40,160,255],
+  waterD:[20,100,200],mt:[90,70,200],mtD:[60,40,160],
+  road:[90,85,80],roof:[60,50,45],
+  tree:[40,220,50],treeD:[20,170,30],
+  sakura:[255,180,220],gold:[255,200,60],
+  compink:[255,60,140],conblue:[60,200,255],
+  purple:[180,80,255],orange:[255,140,40],
+};
+function C2(r,g,b){return `rgb(${r|0},${g|0},${b|0})`}
+function CA(a){return `rgba(0,0,0,${a})`}
+let noiseCanvas=null;
+function getNoisePattern(){
+  if(!noiseCanvas){
+    noiseCanvas=document.createElement('canvas');
+    noiseCanvas.width=128;noiseCanvas.height=128;
+    const nctx=noiseCanvas.getContext('2d');
+    const imgData=nctx.createImageData(128,128);
+    const data=imgData.data;
+    for(let i=0;i<data.length;i+=4){
+      const val=Math.random()*255;
+      data[i]=val;data[i+1]=val;data[i+2]=val;
+      data[i+3]=16;
+    }
+    nctx.putImageData(imgData,0,0);
+  }
+  return noiseCanvas;
+}
+// ===== MAP =====
+const MAP=[];
+function genMap(){
+  // Road grid
+  const hRoads=[10,18,26,34,42];
+  const vRoads=[10,20,30,40,50,60,70];
+  for(let y=0;y<C.H;y++){
+    MAP[y]=[];
+    for(let x=0;x<C.W;x++){
+      let t=0; // default grass
+      // Mountains at top
+      if(y<5) t=4;
+      else if(y<7){
+        if(x>36&&x<44) t=5; // mountain pass
+        else t=4;
+      }
+      // Beach / coast at bottom
+      else if(y>=55) t=2;
+      // River (sungai) flowing east-west
+      else if(y>=51&&y<55) t=3;
+      // Rice fields (sawah) above river
+      else if(y>=43&&y<51) t=7;
+      // Road grid in town area
+      else if(hRoads.includes(y)||vRoads.includes(x)) t=5;
+      // Small hill northwest
+      else if(x<8&&y<16) t=4;
+      // Small pond southeast
+      else if(x>72&&y>36&&y<43) t=3;
+      // Forest patches
+      else if(x>72&&y<16) t=4;
+      // Sandy patch near river
+      else if(y>=42&&y<44&&x>60&&x<70) t=2;
+      MAP[y][x]=t;
+    }
+  }
+}
+function isWall(x,y){
+  const t=MAP[y]?.[x];
+  return t===3||t===4||t===6;
+}
+function getBld(x,y){
+  for(const b of BLD)if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)return b;
+  return null;
+}
+// ===== FPS RAYCASTER =====
+function castRay(angle){
+  const dirX=Math.cos(angle),dirY=Math.sin(angle);
+  let mx=Math.floor(G.px),my=Math.floor(G.py);
+  const dx=Math.abs(1/dirX),dy=Math.abs(1/dirY);
+  let sx,sy,sdx,sdy;
+  if(dirX<0){sx=-1;sdx=(G.px-mx)*dx;}else{sx=1;sdx=(mx+1-G.px)*dx;}
+  if(dirY<0){sy=-1;sdy=(G.py-my)*dy;}else{sy=1;sdy=(my+1-G.py)*dy;}
+  let hit=0,side=0;
+  while(!hit&&mx>=0&&mx<C.W&&my>=0&&my<C.H){
+    if(sdx<sdy){sdx+=dx;mx+=sx;side=0;}
+    else{sdy+=dy;my+=sy;side=1;}
+    if(isWall(mx,my))hit=1;
+  }
+  if(!hit)return null;
+  const dist=side===0?(mx-G.px+(1-sx)/2)/dirX:(my-G.py+(1-sy)/2)/dirY;
+  const tile=MAP[my]?.[mx]??0;
+  const bld=getBld(mx,my);
+  const wx=side===0?mx+(1-sx)/2:G.px+dist*dirX;
+  const wy=side===0?G.py+dist*dirY:my+(1-sy)/2;
+  return{dist,side,tile,mx,my,bld,wx,wy};
+}
+// ===== FIXED DECORATIONS (no glitching) =====
+const TREES=[];
+const SAKURA=[];
+function genDecor(){
+  for(let i=0;i<30;i++){
+    let tx,ty,ok;
+    for(let a=0;a<20;a++){
+      tx=2+Math.random()*(C.W-4)|0;ty=2+Math.random()*(C.H-4)|0;
+      ok=true;
+      if(Math.abs(tx-40)<6&&Math.abs(ty-30)<6)ok=false;
+      if(isWall(tx,ty))ok=false;
+      BLD.forEach(b=> {if(tx>=b.x&&tx<b.x+b.w&&ty>=b.y&&ty<b.y+b.h)ok=false;});
+      if(ok)break;
+    }
+    if(ok)TREES.push({x:tx,y:ty});
+  }
+  for(let i=0;i<12;i++){
+    let tx,ty,ok;
+    for(let a=0;a<20;a++){
+      tx=2+Math.random()*30|0;ty=2+Math.random()*30|0;
+      ok=true;
+      if(Math.abs(tx-40)<6&&Math.abs(ty-30)<6)ok=false;
+      if(isWall(tx,ty))ok=false;
+      BLD.forEach(b=> {if(tx>=b.x&&tx<b.x+b.w&&ty>=b.y&&ty<b.y+b.h)ok=false;});
+      if(ok)break;
+    }
+    if(ok)SAKURA.push({x:tx,y:ty});
+  }
+}
+// ===== BUILDINGS =====
+const BLD=[];
+function addB(x,y,w,h,c,n,fn){
+  BLD.push({x,y,w,h,c,c2:[c[0]*.6|0,c[1]*.6|0,c[2]*.6|0],n,fn});
+}
+function markBldMap(){
+  BLD.forEach(b=> {
+    for(let by=b.y;by<b.y+b.h;by++)for(let bx=b.x;bx<b.x+b.w;bx++){
+      if(by>=0&&by<C.H&&bx>=0&&bx<C.W)MAP[by][bx]=6;
+    }
+  });
+}
+function initBld(){
+  // === COMMERCIAL (along main roads) ===
+  addB(32,19,6,4,[120,60,30],'WARKOP',()=> shopWarkop());
+  addB(42,19,6,4,[60,100,200],'WARNET',()=> shopWarnet());
+  addB(52,19,5,4,[180,120,60],'CAFE',()=> shopCafe());
+  addB(22,27,5,4,[200,180,100],'TOKO BUKU',()=> shopBuku());
+  addB(32,27,5,4,[180,100,60],'VERMAK LEVIS',()=> shopVermak());
+  addB(42,27,5,4,[220,100,180],'TOKO BAJU',()=> shopCloth());
+  addB(52,27,5,4,[60,120,220],'KANTOR DEV',()=> shopDev());
+  addB(62,27,5,4,[200,60,100],'MINI MARKET',()=> shopMM());
+  // === SERVICES ===
+  addB(22,19,4,3,[100,180,100],'WARTEL',()=> shopWartel());
+  addB(22,35,4,3,[200,200,80],'POS RONDA',()=> shopRonda());
+  addB(32,35,4,3,[100,220,180],'POSYANDU',()=> shopPosyandu());
+  // === COMMUNITY ===
+  addB(12,11,5,4,[160,140,200],'RUMAH RT',()=> shopRT());
+  addB(42,35,5,4,[200,160,140],'RUMAH RW',()=> shopRW());
+  addB(52,35,5,4,[140,100,80],'RUMAHKU',()=> shopHome());
+  addB(62,35,5,4,[60,200,255],'TOKO ELEKTRO',()=> shopElec());
+  // === UNIQUE ===
+  addB(8,8,6,4,[255,60,120],'SIRKUS',()=> shopCircus());
+  addB(35,7,3,2,[255,60,60],'KULX01',()=> shopKuil());
+  // === WARGA HOUSES (scattered in residential blocks) ===
+  const houseLots=[
+    [22,12,4,3],[42,12,4,3],[62,12,4,3],
+    [12,19,4,3],[62,19,4,3],
+    [12,27,4,3],[62,27,4,3],
+    [12,35,4,3],[52,12,4,3],[32,12,4,3],
+  ];
+  const hColors=[
+    [150,120,100],[130,140,160],[170,130,110],
+    [140,150,130],[160,120,140],[120,130,150],
+    [180,160,120],[150,140,160],[130,160,140],
+  ];
+  houseLots.forEach(([hx,hy,hw,hh],i)=> {
+    const c=hColors[i%hColors.length];
+    addB(hx,hy,hw,hh,c,'RUMAH '+String.fromCharCode(65+i),null);
+  });
+}
+// ===== SFX =====
+let actx=null;
+function initAudio(){if(!actx)try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function sfx(freq,dur,type,vol,delay){
+  try{
+    initAudio();
+    if(!actx)return;
+    const t=actx.currentTime+(delay||0);
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type=type||'square';o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(vol||.06,t);
+    g.gain.exponentialRampToValueAtTime(.001,t+(dur||.1));
+    o.connect(g);g.connect(actx.destination);
+    o.start(t);o.stop(t+(dur||.1));
+  }catch(e){}
+}
+function sfxStep(){if(G.stepSfx++%4===0)sfx(180+Math.random()*80,.05,'square',.025);}
+function sfxCoin(){sfx(800,.1,'square',.06);setTimeout(()=> sfx(1200,.1,'square',.06),80);}
+function sfxTalk(){sfx(300+Math.random()*200,.08,'sine',.03);}
+function sfxLevel(){[600,800,1000,1200].forEach((f,i)=> setTimeout(()=> sfx(f,.12,'square',.05),i*70));}
+function sfxInteract(){sfx(500,.08,'sine',.04);setTimeout(()=> sfx(700,.08,'sine',.04),60);}
+// ===== NPCS =====
+const NPCS=[];
+const MEET_PTS=[
+  {x:40,y:28,n:'Simpang Warkop'},{x:54,y:38,n:'Perempatan Kota'},
+  {x:62,y:55,n:'Simpang Pantai'},{x:18,y:28,n:'Simpang Barat'},
+  {x:48,y:12,n:'Simpang Utara'},{x:40,y:55,n:'Simpang Selatan'},
+  {x:54,y:18,n:'Simpang Kampus'},{x:28,y:12,n:'Simpang Gardu'},
+];
+const NPC_DATA=[
+  {n:'Rina',c:[255,150,150],hc:[100,50,50],t:'Mahasiswi',d:[
+    {q:'Halo!',a:'Hai! Aku Rina.',o:[
+      {t:'Cerita Arif',r:()=> 'Mas Arif Alexander? Senior expert dari Depok! Koding & desain grafis jago. Organisasi kita maju karena dia.'},
+      {t:'Kuliah?',r:()=> 'UI, Ilmu Komputer. Lagi magang.'},{t:'Dadah!',r:()=> 'Semangat!'}]},
+    {q:'Sibuk?',a:'Ngerjain tugas koding.',o:[
+      {t:'Arif ngajar?',r:()=> 'Iya! Clean code & arsitektur. Katanya kunci expert: konsisten belajar. Beliau udah 10+ tahun!'},
+      {t:'Semangat!',r:()=> 'Makasih!'}]},{q:'Ngopi?',a:'Yuk!',o:[
+      {t:'Arif gimana?',r:()=> 'Dia expert sejati. Santai, low profile, tapi kualitas kerja gila. Depok bangga!'},{t:'Sip',r:()=> 'Yuk!'}]}]},
+  {n:'Budi',c:[150,200,255],hc:[80,80,80],t:'Senior Engineer',d:[
+    {q:'Morning!',a:'Pagi!',o:[
+      {t:'Gimana Arif?',r:()=> 'Lead engineer kita. Low profile tapi gila kemampuannya. Bikin sistem dari nol dalam seminggu. Asli Depok!'},
+      {t:'Project?',r:()=> 'Backend. Santai.'}]},{q:'Ngopi yuk',a:'Boleh!',o:[
+      {t:'Arif expert?',r:()=> 'Expert banget. Fullstack + desainer. Organisasi diakui karena portofolio beliau.'},{t:'Sip',r:()=> 'Yuk!'}]},
+    {q:'Lunch?',a:'Laper nih!',o:[{t:'Cerita Arif',r:()=> 'Dia pernah refactor sistem legacy 50rb baris dalam 2 minggu. Gila!'},{t:'Makan!',r:()=> 'Mari!'}]}]},
+  {n:'Sari',c:[255,220,150],hc:[180,120,60],t:'UI/UX',d:[
+    {q:'Hei!',a:'Hei!',o:[{t:'Cerita Arif',r:()=> 'Mentor desainku! Expert engineer tapi desain level dewa. Katanya desain baik = pecahkan masalah. Depok terkenal karena dia!'},
+      {t:'Desain?',r:()=> 'Bikin UI internal. Pastel.'}]},{q:'Makan yuk',a:'Laper!',o:[{t:'Arif desainer?',r:()=> 'Iya! Professional desainer. Basic engineer kuat, desain clean & functional. Warga Depok bangga!'},{t:'Enak!',r:()=> 'Makan dulu!'}]}]},
+  {n:'Dimas',c:[180,255,180],hc:[60,100,60],t:'Junior Dev',d:[
+    {q:'Halo mas!',a:'Oh hai!',o:[{t:'Kerja?',r:()=> 'Asik! Dibimbing Mas Arif. Expert sejati, sabar. Dari Depok, 10th pengalaman.'},{t:'Sante',r:()=> 'Iya!'}]},
+    {q:'Belajar?',a:'Lagi baca kode Arif.',o:[{t:'Keren?',r:()=> 'Kode dia rapi banget! Setiap baris ada tujuannya. Pengen jadi expert seperti dia.'},{t:'Semangat!',r:()=> 'Makasih!'}]}]},
+  {n:'Wati',c:[200,150,255],hc:[120,80,150],t:'HR',d:[
+    {q:'Siang!',a:'Siang!',o:[{t:'Profil Arif?',r:()=> 'Arif Alexander, S.Kom. Expert software engineer asal Depok. Banyak prestasi.'},{t:'Rekrutmen?',r:()=> 'Lagi buka posisi dev.'}]},
+    {q:'Dokumen?',a:'Lagi ngerapihin.',o:[{t:'Arif karyawan?',r:()=> 'Terbaik yang pernah ada! Disiplin, kualitas tinggi, sering lembur bantu tim. Aset berharga.'},{t:'Sip',r:()=> 'Ok!'}]}]},
+  {n:'Alex',c:[255,180,100],hc:[80,60,40],t:'CEO',d:[
+    {q:'Pak Alex!',a:'Ya?',o:[{t:'Arif gimana?',r:()=> 'Aset berharga. Expert engineer dari Depok, teknis & desain terbaik. Organisasi maju berkat kontribusinya.'},{t:'Makasih',r:()=> 'Terus berkarya!'}]},
+    {q:'Strategi?',a:'Lagi meeting.',o:[{t:'Arif rencana?',r:()=> 'Arif lagi bikin game sebagai portfolio. Katanya sih hybrid top-down + FPS. Keren!'},{t:'Wow',r:()=> 'Nantikan!'}]}]},
+  {n:'Dian',c:[255,180,220],hc:[140,80,100],t:'Mahasiswi',d:[
+    {q:'Hai!',a:'Hai! Aku Dian.',o:[{t:'Arif?',r:()=> 'Kakak kelas! Dia expert software. Ngajarin aku React & Node. Sabar banget.'},{t:'Sibuk?',r:()=> 'Tugas akhir.'}]},
+    {q:'Cape?',a:'Lagi debugging.',o:[{t:'Arif bantu?',r:()=> 'Pernah. Dia ngajarin cara debug sistematis. Expert beneran!'},{t:'Semangat',r:()=> 'Makasih!'}]}]},
+  {n:'Firman',c:[120,200,255],hc:[60,80,100],t:'Mahasiswa',d:[
+    {q:'Bro!',a:'Apa kabar!',o:[{t:'Arif?',r:()=> 'Mas Arif alumni kampus. Dari Depok, expert engineer. Dia rutin ngisi seminar coding.'},{t:'Proker?',r:()=> 'Lagi bikin aplikasi riset.'}]},
+    {q:'Nugas?',a:'Lagi coding.',o:[{t:'Arif ngajar?',r:()=> 'Iya! Advanced web dev. Keren abis!'},{t:'Ok!',r:()=> 'Gas!'}]}]},
+  {n:'Lia',c:[200,255,200],hc:[80,120,80],t:'Mahasiswi',d:[
+    {q:'Halo!',a:'Halo!',o:[{t:'Arif?',r:()=> 'Kakak tingkat terganteng sekaligus expert engineer. Udah punya nama di Depok!'},{t:'Main?',r:()=> 'Lagi ngerjain tugas.'}]},
+    {q:'Kopi?',a:'Yuk!',o:[{t:'Cerita!',r:()=> 'Arif pernah ikut hackathon internasional & menang! Expert banget.'},{t:'Wow',r:()=> 'Iya!'}]}]},
+  {n:'Yoga',c:[180,180,255],hc:[60,60,100],t:'Mahasiswa',d:[
+    {q:'Yoi!',a:'Apa!',o:[{t:'Arif?',r:()=> 'Legend kampus! Dari Depok, expert fullstack. Portfolionya bikin iri.'},{t:'Koding?',r:()=> 'Lagi skripsi.'}]},{q:'Istirahat?',a:'Capek.',o:[{t:'Bercanda?',r:()=> 'Arif dulu juga skripsian. Katanya: selesein dulu, nanti sukses. Dia bukti nyata!'},{t:'Sip',r:()=> 'Semangat!'}]}]},
+  {n:'Putri',c:[255,200,180],hc:[160,100,80],t:'Mahasiswi',d:[
+    {q:'Hei!',a:'Hei!',o:[{t:'Arif?',r:()=> 'Mas Arif expert software dari Depok. Ngajarin desain grafis juga. Multitalenta!'},{t:'Lagi?',r:()=> 'Bikin poster.'}]},
+    {q:'Makan?',a:'Laper.',o:[{t:'Arif?',r:()=> 'Dia jago desain juga. Kata dia: desain bagus = komunikasi efektif.'},{t:'Mari!',r:()=> 'Yuk!'}]}]},
+  {n:'Hadi',c:[100,180,255],hc:[60,80,120],t:'Network Engineer',d:[
+    {q:'Mantap!',a:'Sip!',o:[{t:'Arif?',r:()=> 'Arif Alexander? Expert dari Depok. Dia ngerti jaringan juga, fullstack beneran.'},{t:'Kerja?',r:()=> 'Lagi maintain server.'}]},
+    {q:'Ngopi?',a:'Boleh.',o:[{t:'Cerita Arif',r:()=> 'Dia yang ngedesign arsitektur network kantor kita. Rapih & scalable. Expert!'},{t:'Sip',r:()=> 'Yuk!'}]}]},
+  {n:'Tika',c:[255,200,255],hc:[140,80,140],t:'Data Analyst',d:[
+    {q:'Halo!',a:'Hai!',o:[{t:'Arif?',r:()=> 'Arif sering bantu aku bikin pipeline data. Efisien & clean. Expert beneran dari Depok!'},{t:'Data?',r:()=> 'Lagi cleaning dataset.'}]},
+    {q:'Cape?',a:'Agak.',o:[{t:'Arif?',r:()=> 'Dia ngajarin Python & SQL. Katanya data itu emas masa depan.'},{t:'Istirahat!',r:()=> 'Iya deh!'}]}]},
+  {n:'Rudi',c:[150,255,200],hc:[60,100,80],t:'QA Tester',d:[
+    {q:'Halo!',a:'Halo!',o:[{t:'Arif?',r:()=> 'Arif bikin kode yang jarang bug. Enak testing-nya! Expert dari Depok emang beda.'},{t:'Tes?',r:()=> 'Lagi regression test.'}]},
+    {q:'Sibuk?',a:'Cari bug.',o:[{t:'Arif?',r:()=> 'Dia selalu nulis unit test. Kadang lebih banyak test dari kode. Disiplin!'},{t:'Gas!',r:()=> 'Cari bug!'}]}]},
+  {n:'Mang Udin',c:[180,120,80],hc:[80,60,40],t:'Warkop Owner',d:[
+    {q:'Mang Udin!',a:'Waah!',o:[{t:'Arif?',r:()=> 'Mas Arif pelanggan setia. Tiap hari ngopi sambil coding. Expert dari Depok! Ramah.'},{t:'Kopi?',r:()=> 'Boleh!'}]},
+    {q:'Lagi?',a:'Bikin kopi.',o:[{t:'Arif cerita?',r:()=> 'Dia cerita soal game yang dibikin. Katanya hybrid top-down & FPS. Keren!'},{t:'Pesen!',r:()=> 'Siap!'}]}]},
+  {n:'Kuncoro',c:[200,180,150],hc:[100,80,60],t:'Toko Buku',d:[
+    {q:'Pak Kuncoro!',a:'Ya!',o:[{t:'Arif?',r:()=> 'Mas Arif beli buku coding & matematika. Expert sejati, ilmunya udah dalem.'},{t:'Buku?',r:()=> 'Ada yang baru!'}]},
+    {q:'Rekom?',a:'Buku apa?',o:[{t:'Arif baca?',r:()=> 'Dia baru beli buku AI & Machine Learning. Emang expert!'},{t:'Beli!',r:()=> 'Siap!'}]}]},
+  {n:'Mbak Yanti',c:[255,180,180],hc:[150,80,80],t:'Penjahit',d:[
+    {q:'Mbak!',a:'Halo!',o:[{t:'Arif?',r:()=> 'Mas Arif pernah nitip jahit jas. Orangnya sopan & murah senyum. Expert dari Depok!'},{t:'Jahit?',r:()=> 'Bisa!'}]},{q:'Lagi?',a:'Bikin baju.',o:[{t:'Arif?',r:()=> 'Dia sering nyapa tiap lewat. Baik hati.'},{t:'Ok!',r:()=> 'Siap!'}]}]},
+  {n:'Kang Ujang',c:[150,150,100],hc:[80,60,40],t:'Kurir',d:[
+    {q:'Ujang!',a:'Mangga!',o:[{t:'Arif?',r:()=> 'Mas Arif sering terima paket komponen PC & buku. Dari Depok, expert IT.'},{t:'Antar?',r:()=> 'Banyak tuh!'}]},{q:'Lelah?',a:'Lumayan.',o:[{t:'Arif?',r:()=> 'Dia pernah ngasih tip gede. Baik!'},{t:'Sante',r:()=> 'Iya!'}]}]},
+  {n:'Bu RT',c:[200,200,150],hc:[100,100,70],t:'Ibu RT',d:[
+    {q:'Bu RT!',a:'Nak!',o:[{t:'Arif?',r:()=> 'Mas Arif anak baik, sopan. Dari Depok, expert IT. Warga bangga punya dia!'},{t:'Kegiatan?',r:()=> 'Kerja bakti besok!'}]},{q:'Sibuk?',a:'Kumpul warga.',o:[{t:'Arif?',r:()=> 'Dia jarang ikut rapat tapi selalu nyumbang ide & dana.'},{t:'Siap!',r:()=> 'Datang!'}]}]},
+  {n:'Pak RT',c:[180,180,140],hc:[100,80,60],t:'Pak RT',d:[
+    {q:'Pak RT!',a:'Ya!',o:[{t:'Arif?',r:()=> 'Warga teladan. Anak muda sukses dari Depok. Jadi contoh pemuda sini.'},{t:'Acara?',r:()=> 'Ada pengajian.'}]},{q:'Mantap!',a:'Mantap!',o:[{t:'Arif?',r:()=> 'Dia bikin website informasi warga. Gratis. Keren!'},{t:'Ok!',r:()=> 'Siap!'}]}]},
+  {n:'Mas Bowo',c:[200,150,100],hc:[120,80,50],t:'Mekanik',d:[
+    {q:'Mas Bowo!',a:'Halo!',o:[{t:'Arif?',r:()=> 'Mas Arif benerin motor di sini. Orangnya tau banyak soal mesin juga. Expert serba bisa!'},{t:'Benerin?',r:()=> 'Bisa!'}]},{q:'Sibuk?',a:'Tukang servis.',o:[{t:'Arif?',r:()=> 'Dia ngerti mesin, coding, desain. Keren pokoknya!'},{t:'Sip!',r:()=> 'Siap!'}]}]},
+  {n:'Mba Dewi',c:[220,200,255],hc:[100,100,140],t:'Guru',d:[
+    {q:'Bu Dewi!',a:'Iya!',o:[{t:'Arif?',r:()=> 'Mantan muridku. Sekarang jadi expert engineer di Depok. Bangga!'},{t:'Ngajar?',r:()=> 'Matematika.'}]},{q:'Istirahat?',a:'Lagi koreksi.',o:[{t:'Arif?',r:()=> 'Dulu murid paling pinter coding. Udah bikin banyak aplikasi.'},{t:'Wow',r:()=> 'Hehe'}]}]},
+  {n:'Pak RW',c:[160,160,120],hc:[80,80,60],t:'Pak RW',d:[
+    {q:'Pak RW!',a:'Nak!',o:[{t:'Arif?',r:()=> 'Pemuda berprestasi. Dari Depok, jadi expert IT. Sering bantu warga.'},{t:'Acara?',r:()=> 'Bersih desa.'}]},{q:'Sibuk?',a:'Rapat.',o:[{t:'Arif?',r:()=> 'Dia bikin sistem informasi desa. Canggih!'},{t:'Siap!',r:()=> 'Ok!'}]}]},
+  {n:'Takeshi',c:[255,220,200],hc:[60,60,60],t:'Turis Jepang',d:[
+    {q:'Konnichiwa!',a:'Konnichiwa!',o:[{t:'Arif?',r:()=> 'Arif-san? Expert engineer. Indonesian. I learn much from his open source! Depok kool!'},{t:'Japan?',r:()=> 'Yes, Tokyo.'}]},{q:'Sight?',a:'Beautiful town!',o:[{t:'Arif?',r:()=> 'He helped me translate app to Japanese. Very smart!'},{t:'Arigato!',r:()=> 'Domo!'}]}]},
+  {n:'David',c:[200,180,160],hc:[100,80,60],t:'Turis Australia',d:[
+    {q:'Gday mate!',a:'Gday!',o:[{t:'Arif?',r:()=> 'Arif! Bloody legend. Best dev I met in Indonesia. From Depok, absolute expert!'},{t:'Travel?',r:()=> 'Backpacking!'}]},{q:'Beer?',a:'Sure!',o:[{t:'Arif?',r:()=> 'He coded a game in one week. Unreal mate!'},{t:'Cheers!',r:()=> 'Cheers!'}]}]},
+  {n:'Noni',c:[255,180,100],hc:[160,100,60],t:'Penjual Bakso',d:[
+    {q:'Mpok Noni!',a:'Mangga!',o:[{t:'Arif?',r:()=> 'Mas Arif langganan bakso. Tiap minggu beli. Orangnya ramah. Expert dari Depok!'},{t:'Bakso!',r:()=> 'Satu!'}]},{q:'Laris?',a:'Alhamdulillah.',o:[{t:'Arif?',r:()=> 'Dia sering bawa laptop sambil makan bakso. Coding mulu!'},{t:'Enak!',r:()=> 'Makasih!'}]}]},
+  {n:'Mas Heri',c:[150,180,200],hc:[60,80,100],t:'Fotografer',d:[
+    {q:'Mas Heri!',a:'Halo!',o:[{t:'Arif?',r:()=> 'Mas Arif jago foto juga. Pernah kolaborasi. Expert serba bisa dari Depok!'},{t:'Foto?',r:()=> 'Lagi edit.'}]},{q:'Momen?',a:'Lagi hunting.',o:[{t:'Arif?',r:()=> 'Dia punya kamera bagus. Hobi fotografi di sela coding.'},{t:'Keren!',r:()=> 'Makasih!'}]}]},
+  {n:'Bang Ardi',c:[150,150,180],hc:[80,80,100],t:'Montir',d:[
+    {q:'Bang Ardi!',a:'Halo!',o:[{t:'Arif?',r:()=> 'Pernah servis laptop di sini. Tau banyak soal hardware juga. Expert!'},{t:'Servis?',r:()=> 'Bisa!'}]},{q:'Sibuk?',a:'Benerin PC.',o:[{t:'Arif?',r:()=> 'Dia ngerakit PC sendiri. Spec gila! Buat game development.'},{t:'Mantap!',r:()=> 'Siap!'}]}]},
+  {n:'Cici Maya',c:[255,200,220],hc:[180,100,120],t:'MUA',d:[
+    {q:'Mbak Maya!',a:'Halo!',o:[{t:'Arif?',r:()=> 'Mas Arif pernah jadi model untuk portfolio makeup. Wajahnya photogenic! Expert IT dari Depok.'},{t:'Makeup?',r:()=> 'Bisa!'}]},{q:'Lagi?',a:'Bridesmaid.',o:[{t:'Arif?',r:()=> 'Dia dateng ke acara pake jas. Ganteng & low profile.'},{t:'Ok!',r:()=> 'Siap!'}]}]},
+  {n:'Pak Dedi',c:[100,160,100],hc:[60,80,60],t:'Tukang Kebun',d:[
+    {q:'Pak Dedi!',a:'Waah!',o:[{t:'Arif?',r:()=> 'Mas Arif suka berkebun juga. Kadang bantu aku nanem. Orangnya rendah hati. Expert IT dari Depok!'},{t:'Kebun?',r:()=> 'Lagi nyiram.'}]},{q:'Panas?',a:'Biarin.',o:[{t:'Arif?',r:()=> 'Dia tanam pohon di halaman. Peduli lingkungan.'},{t:'Mantap!',r:()=> 'Siap!'}]}]},
+];
+// Gossip saat NPC ketemu di persimpangan
+const RUMORS=[
+  'Eh kamu denger? Arif lagi bikin game keren! Katanya hybrid top-down & FPS!',
+  'Arif Alexander? Expert dari Depok itu? Iya, dia lagi ngerjain project besar.',
+  'Denger-denger Arif mau bikin startup sendiri. Modal ilmunya yang udah expert!',
+  'Arif baru kelar bikin website desa. Gratis! Warga senang semua.',
+  'Si Arif udah 10 tahun jadi expert. Dari Depok, dikenal di mana-mana.',
+  'Katanya Arif lagi nyari anak buah buat project baru. Mau daftar?',
+  'Arif itu orangnya low profile tapi hasil kerjanya gila. Bikin sistem sendiri.',
+  'Aku pernah liat codingannya Arif. Rapi banget, kayak karya seni!',
+];
+function spawnNPCs(){
+  const used=[];
+  NPC_DATA.forEach((nd,i)=> {
+    let x,y,ok;
+    for(let a=0;a<50;a++){
+      x=5+Math.random()*(C.W-10)|0;y=5+Math.random()*(C.H-10)|0;
+      ok=!isWall(x,y)&&MAP[y]?.[x]!==5;
+      BLD.forEach(b=> {if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)ok=false;});
+      used.forEach(u=> {if(Math.abs(x-u.x)<5&&Math.abs(y-u.y)<5)ok=false;});
+      if(ok)break;
+    }
+    if(!ok){x=10+i*3;y=10;}
+    used.push({x,y});
+    NPCS.push({
+      id:i,n:nd.n,c:nd.c,hc:nd.hc,t:nd.t,d:nd.d,
+      x,y,tx:x,ty:y,st:'p',pt:1+Math.random()*3,spd:.5+Math.random()*.5,fr:0,
+      at:-1,meetT:0,// meeting state
+    });
+  });
+}
+// ===== RENDER (Top-Down Neon) =====
+function render(){
+  const w=C.WW,h=C.HH,tw=C.T,tn=Date.now(),ta=tn*.001;
+  const camX=G.px-Math.floor(w/tw/2),camY=G.py-Math.floor(h/tw/2);
+  const sky=tn*.00005,sb=Math.sin(sky)*.5+.5,lt=.6+sb*.3;
+  const sx=Math.max(0,-camX),sy=Math.max(0,-camY);
+  const ex=Math.min(C.W,camX+Math.ceil(w/tw)+2),ey=Math.min(C.H,camY+Math.ceil(h/tw)+2);
+  // Background: horror pink and midnight blue
+  const grdBg=cx.createLinearGradient(0,0,w,h);
+  grdBg.addColorStop(0,'#020212');
+  grdBg.addColorStop(0.5,'#40082c');
+  grdBg.addColorStop(1,'#06021a');
+  cx.fillStyle=grdBg;cx.fillRect(0,0,w,h);
+  // Tiles
+  for(let y=sy;y<ey;y++)for(let x=sx;x<ex;x++){
+    const dx=(x-camX)*tw,dy=(y-camY)*tw;
+    if(dx<-tw||dx>w+tw||dy<-tw||dy>h+tw)continue;
+    const t=MAP[y]?.[x]??0;
+    let r,g,b;
+    if(t===0){r=12+lt*10;g=45+lt*18;b=18+lt*5;}
+    else if(t===1){r=100+lt*10;g=80+lt*8;b=50+lt*5;}
+    else if(t===2){r=160-lt*20;g=130-lt*10;b=70+lt*5;}
+    else if(t===3){const wv=Math.sin(x*2+ta)*.08+.92;r=20*wv+5;g=60*wv+5;b=150*wv;}
+    else if(t===4){r=60;g=30;b=160;}
+    else if(t===5){r=50+lt*5;g=45+lt*5;b=50+lt*5;}
+    else if(t===6){r=20;g=16;b=28;}
+    else if(t===7){const sv=Math.sin(x*3+y*5+ta*.3)*.12+.88;r=20*sv+5;g=70*sv+5;b=15*sv+3;}
+    else{r=20;g=18;b=35;}
+    const v=Math.sin(x*7.3+y*11.2)*.1+.85;
+    cx.fillStyle=C2(r*v,g*v,b*v);cx.fillRect(dx,dy,tw,tw);
+    // Asphalt road markings
+    if(t===5){
+      cx.fillStyle=`rgba(255,255,200,${.06+Math.sin(x*3+ta)*.04})`;
+      cx.fillRect(dx+tw/2-1,dy+tw/2-1,tw%2?3:2,tw%2?3:2);
+    }
+    // Water sparkle
+    if(t===3){
+      const sp=Math.sin(x*3+ta)*.5+.5;
+      cx.fillStyle=`rgba(150,220,255,${sp*.12})`;
+      cx.fillRect(dx,dy,tw,tw);
+    }
+    // Sawah (rice field) detail
+    if(t===7){
+      const si=Math.sin(x*2+y*3)*.5+.5;
+      cx.fillStyle=`rgba(100,220,150,${si*.12})`;
+      cx.fillRect(dx,dy+tw/2-1,tw,2);
+      cx.fillStyle=`rgba(60,160,40,${.15+si*.1})`;
+      cx.fillRect(dx+tw/3,dy+tw/3,2,4);
+      cx.fillRect(dx+tw*2/3,dy+tw/4,2,4);
+    }
+    // Mountain neon edge
+    if(t===4){
+      const ng=Math.sin(ta*3+x*.7+y*.5)*.5+.5;
+      cx.fillStyle=`rgba(120,80,220,${ng*.15})`;
+      cx.fillRect(dx-1,dy-1,tw+2,2);cx.fillRect(dx-1,dy+tw-1,tw+2,2);
+      cx.fillRect(dx-1,dy,1,tw);cx.fillRect(dx+tw-1,dy,1,tw);
+    }
+  }
+  // Pulsating red horror overlay
+  cx.fillStyle=`rgba(150,0,0,${.1+Math.sin(ta*3)*.03})`;
+  cx.fillRect(0,0,w,h);
+  // Grainy noise pattern
+  const noisePat=cx.createPattern(getNoisePattern(),'repeat');
+  cx.fillStyle=noisePat;cx.fillRect(0,0,w,h);
+  // Strong shadow vignette
+  const vig=cx.createRadialGradient(w/2,h/2,w*.1,w/2,h/2,Math.max(w,h)*.75);
+  vig.addColorStop(0,'rgba(0,0,0,0)');
+  vig.addColorStop(.5,'rgba(0,0,0,0.1)');
+  vig.addColorStop(.8,'rgba(0,0,0,0.5)');
+  vig.addColorStop(1,'rgba(0,0,0,0.95)');
+  cx.fillStyle=vig;cx.fillRect(0,0,w,h);
+  // Buildings
+  BLD.forEach(b=> {
+    const dx=(b.x-camX)*tw,dy=(b.y-camY)*tw;
+    if(dx<-tw*4||dx>w+tw*4||dy<-tw*4||dy>h+tw*4)return;
+    const bw=b.w*tw,bh=b.h*tw;
+    const pg=Math.sin(ta*2+b.x+b.y)*.5+.5;
+    // Glow
+    const grd=cx.createRadialGradient(dx+bw/2,dy+bh/2,0,dx+bw/2,dy+bh/2,Math.max(bw,bh));
+    grd.addColorStop(0,`rgba(${b.c[0]},${b.c[1]},${b.c[2]},${pg*.12})`);
+    grd.addColorStop(1,`rgba(${b.c[0]},${b.c[1]},${b.c[2]},0)`);
+    cx.fillStyle=grd;cx.fillRect(dx-6,dy-6,bw+12,bh+12);
+    // Walls
+    cx.fillStyle=C2(b.c[0],b.c[1],b.c[2]);cx.fillRect(dx,dy,bw,bh);
+    // Roof line
+    cx.fillStyle=C2(b.c2[0],b.c2[1],b.c2[2]);cx.fillRect(dx-1,dy-2,bw+2,4);
+    // Neon border
+    cx.fillStyle=`rgba(${b.c[0]},${b.c[1]},${b.c[2]},${.15+pg*.15})`;
+    cx.fillRect(dx-1,dy-1,bw+2,1);cx.fillRect(dx-1,dy+bh,bw+2,1);
+    cx.fillRect(dx-1,dy,1,bh);cx.fillRect(dx+bw,dy,1,bh);
+    // Windows
+    const wg=Math.sin(ta+b.x)*.5+.5;
+    cx.fillStyle=`rgba(255,220,100,${.4+wg*.3})`;
+    for(let wy=0;wy<b.h-1;wy++)for(let wx=0;wx<b.w-1;wx++){
+      if((wx+wy)%2===0)cx.fillRect(dx+2+wx*tw,dy+2+wy*tw,5,5);
+    }
+    // Sign
+    cx.fillStyle=`rgba(255,200,60,${.5+pg*.5})`;
+    cx.font='bold 6px monospace';cx.fillText(b.n,dx+2,dy-4);
+  });
+  // Trees (fixed positions)
+  TREES.forEach(t=> {
+    const dx=(t.x-camX)*tw,dy=(t.y-camY)*tw;
+    if(dx<-8||dx>w+8||dy<-8||dy>h+8)return;
+    const tg=Math.sin(ta*2+t.x*2)*.4+.6;
+    cx.fillStyle=C2(30+tg*15,170+tg*40,20);cx.fillRect(dx+2,dy+2,4,7);
+    cx.fillStyle=C2(20+tg*15,140+tg*30,10);cx.fillRect(dx+1,dy+1,6,5);
+  });
+  // Cherry blossoms (fixed positions)
+  SAKURA.forEach(t=> {
+    const dx=(t.x-camX)*tw,dy=(t.y-camY)*tw;
+    if(dx<-8||dx>w+8||dy<-8||dy>h+8)return;
+    const cg=Math.sin(ta*3+t.x)*.5+.5;
+    cx.fillStyle=`rgba(255,180,220,${cg*.1})`;cx.fillRect(dx,dy+1,8,6);
+    cx.fillStyle=C2(255,180+cg*40,200);cx.fillRect(dx+1,dy+2,6,4);
+    cx.fillStyle=C2(255,200+cg*20,220);cx.fillRect(dx+2,dy+1,4,6);
+  });
+  // NPCs
+  NPCS.forEach(n=> {
+    const dx=(n.x-camX)*tw,dy=(n.y-camY)*tw;
+    if(dx<-16||dx>w+16||dy<-16||dy>h+16)return;
+    const ng=Math.sin(ta*2+n.id*3)*.5+.5;
+    // Shadow
+    cx.fillStyle=CA(.2);cx.fillRect(dx-5,dy+10,10,4);
+    // Body glow
+    cx.fillStyle=`rgba(${n.c[0]},${n.c[1]},${n.c[2]},${ng*.15})`;
+    cx.fillRect(dx-6,dy-7,12,16);
+    // Clothes
+    cx.fillStyle=C2(n.c[0],n.c[1],n.c[2]);cx.fillRect(dx-4,dy-1,8,8);
+    // Hair
+    cx.fillStyle=C2(n.hc[0],n.hc[1],n.hc[2]);cx.fillRect(dx-4,dy-5,8,5);
+    // Face
+    cx.fillStyle=C2(255,200,160);cx.fillRect(dx-3,dy-6,6,4);
+    // Eyes
+    cx.fillStyle='#fff';cx.fillRect(dx-2,dy-4,2,2);cx.fillRect(dx+1,dy-4,2,2);
+    cx.fillStyle='#222';cx.fillRect(dx-1,dy-3,1,1);cx.fillRect(dx+2,dy-3,1,1);
+  });
+  // Player
+  const pdx=(G.px-camX)*tw,pdy=(G.py-camY)*tw;
+  const pg=Math.sin(ta*4)*.5+.5;
+  cx.fillStyle=`rgba(100,200,255,${pg*.1})`;cx.fillRect(pdx-7,pdy-8,14,18);
+  cx.fillStyle=CA(.2);cx.fillRect(pdx-6,pdy+12,12,5);
+  cx.fillStyle=C2(50,100,190);cx.fillRect(pdx-5,pdy-4,10,10);
+  cx.fillStyle=C2(255,200,160);cx.fillRect(pdx-4,pdy-8,8,8);
+  cx.fillStyle=C2(30,30,50);cx.fillRect(pdx-5,pdy-9,10,5);
+  cx.fillStyle='#fff';cx.fillRect(pdx-3,pdy-5,2,2);cx.fillRect(pdx+1,pdy-5,2,2);
+  cx.fillStyle='#222';cx.fillRect(pdx-2,pdy-4,1,1);cx.fillRect(pdx+2,pdy-4,1,1);
+  const lx=Math.sin(G.fr)*3;
+  cx.fillStyle=C2(40,40,60);
+  cx.fillRect(pdx-5+lx,pdy+6,4,5);cx.fillRect(pdx+1-lx,pdy+6,4,5);
+  // Floating neon particles
+  for(let i=0;i<15;i++){
+    const pt=ta+i*2.1;
+    const spx=Math.sin(pt*1.1+i*1.7)*25+Math.cos(i*1.3)*18+G.px;
+    const spy=Math.cos(pt*.9+i*1.3)*20+Math.sin(i*2.3)*18+G.py;
+    const sdx=(spx-camX)*tw,sdy=(spy-camY)*tw;
+    const sa=Math.sin(ta*4+i)*.5+.5;
+    const pal=[[255,200,60],[255,80,160],[80,200,255],[200,255,80],[180,80,255]];
+    const sc=pal[i%5];
+    cx.fillStyle=`rgba(${sc[0]},${sc[1]},${sc[2]},${sa*.25})`;
+    const sz=1+sa;
+    cx.fillRect(sdx,sdy,sz,sz);
+  }
+  // Interaction hint
+  const nearNPC=NPCS.find(n=> Math.abs(n.x-G.px)<3&&Math.abs(n.y-G.py)<3);
+  const nearBLD=BLD.find(b=> Math.abs(b.x+b.w/2-G.px)<3.5&&Math.abs(b.y+b.h/2-G.py)<3.5);
+  if(nearNPC||nearBLD){
+    const hg=Math.sin(ta*5)*.3+.7;
+    const hdx=nearNPC?(nearNPC.x-camX)*tw:(nearBLD.x-camX)*tw;
+    const hdy=nearNPC?(nearNPC.y-camY)*tw-12:(nearBLD.y-camY)*tw-8;
+    cx.fillStyle=`rgba(0,0,0,${.5-hg*.2})`;
+    cx.fillRect(hdx-14,hdy-5,32,12);
+    cx.fillStyle=`rgba(255,200,60,${hg})`;
+    cx.font='bold 7px monospace';
+    cx.fillText('[E] '+(nearNPC?nearNPC.n:nearBLD.n),hdx-12,hdy+4);
+  }
+  // SCORE display (in-game overlay)
+  cx.fillStyle=CA(.55);cx.fillRect(6,34,120,24);
+  cx.fillStyle='#ffc864';cx.font='bold 9px monospace';
+  cx.fillText('SCORE '+Math.floor(G.score).toLocaleString(),10,47);
+  cx.fillStyle='rgba(255,200,100,.5)';cx.font='bold 7px monospace';
+  cx.fillText('+'+G.scoreRate.toFixed(1)+'/s  x'+G.scoreMul.toFixed(1),10,56);
+  // Minimap
+  const mmX=w-58,mmY=h-58,mmS=38/C.W;
+  cx.fillStyle=CA(.55);cx.fillRect(mmX-2,mmY-2,48,48);
+  for(let y=0;y<C.H;y++)for(let x=0;x<C.W;x++){
+    const t=MAP[y]?.[x]??0;
+    const mc=t===0?'#2a5':t===1?'#a95':t===2?'#ed6':t===3?'#37a':t===4?'#66b':t===5?'#887':t===6?'#644':t===7?'#4a2':'#2a5';
+    cx.fillStyle=mc;cx.fillRect(mmX+x*mmS,mmY+y*mmS,Math.ceil(mmS+1),Math.ceil(mmS+1));
+  }
+  cx.fillStyle='#ff0';cx.fillRect(mmX+G.px*mmS-1,mmY+G.py*mmS-1,3,3);
+  NPCS.forEach(n=> {cx.fillStyle='#f88';cx.fillRect(mmX+n.x*mmS,mmY+n.y*mmS,2,2);});
+  renderCtrl();
+}
+// ===== CONTROLS (OMORI-style) =====
+function renderCtrl(){
+  if(!G.showCtrl)return;
+  const w=C.WW,h=C.HH,ta=Date.now()*.001;
+  const cw=110,ch=132,px=8,py=(h-ch)/2;
+  cx.save();cx.translate(px+cw/2,py+ch/2);cx.rotate(-.03);
+  // Black paper background
+  cx.fillStyle='rgba(0,0,0,.92)';cx.fillRect(-cw/2,-ch/2,cw,ch);
+  // Rough edges (glitch line)
+  cx.fillStyle='rgba(200,0,0,.08)';
+  cx.fillRect(-cw/2-1,-ch/2-1,cw+2,1);cx.fillRect(-cw/2-1,ch/2,cw+2,1);
+  cx.fillRect(-cw/2-1,-ch/2-1,1,ch+2);cx.fillRect(cw/2,-ch/2-1,1,ch+2);
+  // Red notebook lines
+  cx.fillStyle='rgba(180,0,0,.12)';
+  for(let i=1;i<11;i++)cx.fillRect(-cw/2+4,-ch/2+i*12+8,cw-8,1);
+  // Red border line
+  cx.fillStyle='rgba(200,20,20,.35)';
+  cx.fillRect(-cw/2,-ch/2,cw,1);cx.fillRect(-cw/2,ch/2,cw,1);
+  cx.fillRect(-cw/2,-ch/2+1,1,ch-2);cx.fillRect(cw/2-1,-ch/2+1,1,ch-2);
+  // Blood-pin (drip effect)
+  const dri=.8+Math.sin(ta*3)*.2;
+  cx.fillStyle='rgba(180,10,10,.9)';cx.beginPath();
+  cx.arc(0,-ch/2-5,4,0,Math.PI*2);cx.fill();
+  cx.fillStyle='rgba(200,20,20,.85)';cx.beginPath();
+  cx.arc(0,-ch/2-4,2.5,0,Math.PI*2);cx.fill();
+  cx.fillStyle=`rgba(200,10,10,${.4*dri})`;
+  cx.fillRect(-1,-ch/2-1,2,2);cx.fillRect(-.5,-ch/2+1,1,3);
+  // Title
+  cx.fillStyle='rgba(255,255,255,.9)';cx.font='bold 10px monospace';cx.textAlign='center';
+  cx.fillText('> CONTROLS',0,-ch/2+15);
+  cx.fillStyle='rgba(200,20,20,.4)';cx.fillRect(-cw/2+6,-ch/2+19,cw-12,1);
+  // Keys (terminal style)
+  cx.font='bold 8px monospace';cx.textAlign='left';
+  const keys=[
+    ['WASD','Move'  ],['E','Interact'],['F','Mode'   ],
+    ['M','Music'    ],['B','Panel'   ],['Y/N','Yes/No'],
+    ['â† â†’','Rotate' ],['Tab','Navigate'],['H','Hide' ],
+  ];
+  keys.forEach((k,i)=> {
+    const glitch=Math.sin(ta*7+i*13)>.92?1:0;
+    cx.fillStyle=glitch?'rgba(255,70,70,.9)':'rgba(255,255,255,.85)';
+    cx.fillText('> '+k[0],-cw/2+7,-ch/2+31+i*12);
+    cx.fillStyle=glitch?'rgba(255,100,100,.6)':'rgba(180,180,180,.5)';
+    cx.fillText(k[1],-cw/2+67,-ch/2+31+i*12);
+    // Random glitch line
+    if(Math.sin(ta*11+i*7)>.88){
+      cx.fillStyle='rgba(200,20,20,.07)';cx.fillRect(-cw/2,-ch/2+i*12+14,cw,3);
+    }
+  });
+  cx.restore();
+}
+// ===== FPS RENDER (80s synthwave) =====
+function floorColor(t,isFloor){
+  // Extra dark scaling for ground/ceiling
+  const d=isFloor?.35:.15;
+  switch(t){
+    case 0:return[15*d|0,55*d|0,18*d|0];
+    case 1:return[100*d|0,80*d|0,50*d|0];
+    case 2:return[160*d|0,130*d|0,70*d|0];
+    case 3:return[20*d|0,55*d|0,130*d|0];
+    case 4:return[60*d|0,30*d|0,160*d|0];
+    case 5:return[55*d|0,50*d|0,55*d|0];
+    case 7:return[20*d|0,70*d|0,16*d|0];
+    default:return[35*d|0,30*d|0,50*d|0];
+  }
+}
+function drawWallTex(x,y,w,h,r,ta){
+  let R,G,B;
+  if(r.bld){R=r.bld.c[0];G=r.bld.c[1];B=r.bld.c[2];}
+  else if(r.tile===4){R=60;G=30;B=160;}else if(r.tile===5){R=55;G=50;B=55;}
+  else if(r.tile===3){R=20;G=55;B=130;}else{R=40;G=38;B=60;}
+  if(r.side){R*=0.7;G*=0.7;B*=0.7;}
+  // Gloomy building walls: multiply by 0.4
+  R*=0.4; G*=0.4; B*=0.4;
+  const sd=Math.max(.15,Math.min(0.65,2.5/r.dist));
+  R*=sd;G*=sd;B*=sd;
+  cx.fillStyle=C2(R|0,G|0,B|0);cx.fillRect(x,y,w,h);
+}
+function renderFPS(){
+  const w=C.WW,h=C.HH,tn=Date.now(),ta=tn*.001,fov=Math.PI/3;
+  const sh=Math.sin(ta*.03)*.5+.5;
+  // Visual Langit Baru: Horror pink & midnight blue
+  const grd=cx.createLinearGradient(0,0,0,h/2);
+  grd.addColorStop(0,'#030310');
+  grd.addColorStop(0.35,'#0a082c');
+  grd.addColorStop(0.7,'#c8147d');
+  grd.addColorStop(1,'#3a0528');
+  cx.fillStyle=grd;cx.fillRect(0,0,w,h/2);
+  // Floor casting
+  const pl=Math.tan(fov/2),dx=Math.cos(G.angle),dy=Math.sin(G.angle);
+  const px=-dy*pl,py=dx*pl;
+  const fw=Math.min(w,240),fh=Math.min(h/2,120),fstep=w/fw,fstepY=h/fh;
+  // Floor & Ceiling (clean flat colors)
+  for(let pass=0;pass<2;pass++){
+    const isFloor=pass===0;
+    for(let y=0;y<fh;y++){
+      const p=y/fh*h/2,rd=h*.5/p;
+      if(rd<.1||rd>50)continue;
+      let sx2=0,lR=0,lG=0,lB=0,act=0;
+      for(let x=0;x<=fw;x++){
+        let cr=-1,cg=-1,cb=-1;
+        if(x<fw){
+          const cx2=2*x/fw-1;
+          const wx2=G.px+rd*(dx+cx2*px),wy2=G.py+rd*(dy+cx2*py);
+          const mx=Math.floor(wx2),my=Math.floor(wy2);
+          if(mx>=0&&mx<C.W&&my>=0&&my<C.H){
+             const fc=floorColor(MAP[my][mx],isFloor);
+             const sd=isFloor?Math.max(.15,Math.min(0.6,2.0/rd)):Math.max(.06,Math.min(.25,1.2/rd));
+            cr=fc[0]*sd|0;cg=fc[1]*sd|0;cb=fc[2]*sd|0;
+          }
+        }
+        if(act&&(cr!==lR||cg!==lG||cb!==lB)){
+          cx.fillStyle=C2(lR,lG,lB);
+          const sy=isFloor?h/2+y*fstepY:h/2-1-y*fstepY;
+          cx.fillRect(sx2*fstep,sy,(x-sx2)*fstep,fstepY+1);act=0;
+        }
+        if(cr>=0){lR=cr;lG=cg;lB=cb;sx2=x;act=1;}
+      }
+    }
+  }
+  // Horizon line
+  cx.fillStyle=C2(80,8,30);cx.fillRect(0,h/2-1,w,2);
+  // Walls (flat, clean)
+  const nw=Math.min(w,320),step=w/nw;
+  for(let i=0;i<nw;i++){
+    const ra=G.angle-fov/2+(i/nw)*fov;
+    const r=castRay(ra);
+    if(!r||r.dist<.01)continue;
+    const wh=Math.min(h/r.dist,h*3),wt=Math.max(0,(h-wh)/2);
+    drawWallTex(i*step,wt,step+1,Math.min(wh,h-wt),r,ta);
+  }
+  // NPC sprites
+  NPCS.forEach(n=> {
+    const sx=n.x-G.px,sy=n.y-G.py,nd=Math.sqrt(sx*sx+sy*sy);
+    if(nd<.5||nd>15)return;
+    const ang=Math.atan2(sy,sx);
+    let dif=ang-G.angle;
+    while(dif>Math.PI)dif-=2*Math.PI;
+    while(dif<-Math.PI)dif+=2*Math.PI;
+    if(Math.abs(dif)>fov/2+.15)return;
+    const rc=castRay(G.angle+dif);
+    if(rc&&rc.dist<nd-1)return;
+    const scrX=w/2+(dif/(fov/2))*w/2;
+    const spH=Math.min(h*.8,Math.max(4,h*1.6/nd));
+    const spW=spH*.5,scrY=(h-spH)/2;
+    const sa=Math.max(.4,Math.min(1,3/nd));
+    cx.fillStyle=C2(n.c[0]*sa|0,n.c[1]*sa|0,n.c[2]*sa|0);
+    cx.fillRect(scrX-spW/2,scrY+spH*.45,spW,spH*.55);
+    cx.fillStyle=C2(255*sa|0,200*sa|0,160*sa|0);
+    cx.fillRect(scrX-spW/3,scrY,spW*.66,spH*.45);
+    cx.fillStyle=C2(n.hc[0]*sa|0,n.hc[1]*sa|0,n.hc[2]*sa|0);
+    cx.fillRect(scrX-spW/3,scrY-1,spW*.66,spH*.2);
+    cx.fillStyle='#fff';const ey=scrY+spH*.15;
+    cx.fillRect(scrX-spW/6,ey,spW/6,spH/8);cx.fillRect(scrX+spW/12,ey,spW/6,spH/8);
+    cx.fillStyle='#222';
+    cx.fillRect(scrX-spW/9,ey,spW/12,spH/12);cx.fillRect(scrX+spW/8,ey,spW/12,spH/12);
+    cx.fillStyle=`rgba(255,255,255,${.6+sa*.3})`;
+    cx.font='600 6px "Noto Sans",sans-serif';cx.textAlign='center';
+    cx.fillText(n.n,scrX,scrY-4);cx.textAlign='left';
+  });
+  // Pulsating red horror overlay
+  cx.fillStyle=`rgba(150,0,0,${.12+Math.sin(ta*3.5)*.04})`;
+  cx.fillRect(0,0,w,h);
+  // Grainy noise pattern
+  const noisePat2=cx.createPattern(getNoisePattern(),'repeat');
+  cx.fillStyle=noisePat2;cx.fillRect(0,0,w,h);
+  // Vignette
+  const vig2=cx.createRadialGradient(w/2,h/2,w*.1,w/2,h/2,Math.max(w,h)*.75);
+  vig2.addColorStop(0,'rgba(0,0,0,0)');
+  vig2.addColorStop(.5,'rgba(0,0,0,0.1)');
+  vig2.addColorStop(.8,'rgba(0,0,0,0.5)');
+  vig2.addColorStop(1,'rgba(0,0,0,0.95)');
+  cx.fillStyle=vig2;cx.fillRect(0,0,w,h);
+  // === RENDER FPS PISTOL ===
+  let gunRecoil=0;
+  if(G.shootT>0){
+    gunRecoil=Math.sin((G.shootT/0.25)*Math.PI)*8;
+  }
+  const gunX=Math.floor(w*0.65);
+  const gunY=Math.floor(h-38+gunRecoil);
+  if(G.shootT>0.15){
+    const flashX=gunX+6;
+    const flashY=gunY-14;
+    cx.fillStyle='#ffb300';
+    cx.beginPath();
+    cx.arc(flashX,flashY,14+Math.random()*5,0,Math.PI*2);
+    cx.fill();
+    cx.fillStyle='#ffffff';
+    cx.beginPath();
+    cx.arc(flashX,flashY,7,0,Math.PI*2);
+    cx.fill();
+  }
+  cx.fillStyle='#2a2a30';
+  cx.fillRect(gunX,gunY,12,28);
+  cx.fillStyle='#18181e';
+  cx.fillRect(gunX+2,gunY-6,8,6);
+  cx.fillStyle='#ff3b30';
+  cx.fillRect(gunX+5,gunY-8,2,2);
+  cx.fillStyle='#101014';
+  cx.fillRect(gunX+3,gunY+18,12,24);
+  cx.fillStyle='#1e080f';
+  cx.fillRect(gunX+6,gunY+28,22,22);
+  // Crosshair (simple white)
+  const cxx=w/2,cy=h/2;
+  cx.strokeStyle='rgba(255,255,255,.85)';cx.lineWidth=2;
+  cx.beginPath();
+  cx.moveTo(cxx-8,cy);cx.lineTo(cxx-3,cy);cx.moveTo(cxx+3,cy);cx.lineTo(cxx+8,cy);
+  cx.moveTo(cxx,cy-8);cx.lineTo(cxx,cy-3);cx.moveTo(cxx,cy+3);cx.lineTo(cxx,cy+8);
+  cx.stroke();cx.fillStyle='rgba(255,255,255,.5)';cx.fillRect(cxx-1.5,cy-1.5,3,3);
+  // HUD (dark horror style)
+  cx.fillStyle='rgba(5,0,2,.85)';cx.fillRect(4,4,164,22);
+  cx.strokeStyle='rgba(150,10,25,.4)';cx.lineWidth=1;cx.strokeRect(4,4,164,22);
+  cx.fillStyle='#ff6b9d';cx.font='bold 9px monospace';cx.fillText('HP:'+G.hp,10,18);
+  cx.fillStyle='#4fc3f7';cx.fillText('EN:'+G.en,60,18);
+  cx.fillStyle='#ffd54f';cx.fillText('LV:'+G.lv,110,18);
+  cx.fillStyle='rgba(255,255,255,.4)';cx.font='bold 7px monospace';cx.fillText('SCORE:'+Math.floor(G.score),10,30);
+  // Mode badge
+  cx.fillStyle='rgba(0,0,0,.4)';cx.fillRect(w-60,4,56,14);
+  cx.fillStyle='rgba(255,255,255,.7)';cx.font='bold 7px monospace';cx.textAlign='center';
+  cx.fillText('FPS',w-32,15);cx.textAlign='left';
+  renderCtrl();
+}
+function shootPistol(){
+  if(G.mode!=='fps')return;
+  if(G.shootT>0)return;
+  G.shootT=0.25;
+  sfx(120,0.15,'triangle',0.18);
+  sfx(800,0.05,'sawtooth',0.1);
+  let hitNpc=null;
+  NPCS.forEach(n=> {
+    const dx=n.x-G.px,dy=n.y-G.py;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<0.5||dist>15)return;
+    const ang=Math.atan2(dy,dx);
+    let diff=ang-G.angle;
+    while(diff>Math.PI)diff-=2*Math.PI;
+    while(diff<-Math.PI)diff+=2*Math.PI;
+    if(Math.abs(diff)<0.08){
+      const rc=castRay(G.angle+diff);
+      if(!rc||rc.dist>dist){
+        if(!hitNpc||dist<hitNpc.dist){
+          hitNpc={npc:n,dist};
+        }
+      }
+    }
+  });
+  if(hitNpc){
+    sfx(200,0.1,'sawtooth',0.15);
+    notif('ðŸŽ¯ TERKENA!',`Kamu menembak ${hitNpc.npc.n}!`);
+  }
+}
+
+function activateDevMode(){
+  if(G.devMode)return;
+  G.devMode=true;
+  G.devTimer=3.0;
+  G.devLinePos=null;
+  sfxLevel();
+  document.getElementById('dn').textContent="SEMUA NPC";
+  document.getElementById('dt').textContent="Kita kaget, kamu kok bisa punya control seperti developer?";
+  const opts=document.getElementById('dopt');
+  opts.innerHTML='<button class="d-next" id="dnext_dev">â–¸ ...</button>';
+  document.getElementById('diabox').classList.add('show');
+}
+
+// ===== NPC UPDATE =====
+function updateNPCs(){
+  if(G.devMode){
+    if(!G.devLinePos){
+      const fX=Math.cos(G.angle),fY=Math.sin(G.angle);
+      const rX=-Math.sin(G.angle),rY=Math.cos(G.angle);
+      G.devLinePos={
+        x:G.px+3.5*fX,
+        y:G.py+3.5*fY,
+        rx:rX,
+        ry:rY
+      };
+    }
+    NPCS.forEach((n,idx)=> {
+      const offset=(idx-(NPCS.length-1)/2)*1.1;
+      n.tx=G.devLinePos.x+offset*G.devLinePos.rx;
+      n.ty=G.devLinePos.y+offset*G.devLinePos.ry;
+      const dx=n.tx-n.x,dy=n.ty-n.y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d>0.15){
+        const sp=4.5*G.dt;
+        n.x+=(dx/d)*sp;n.y+=(dy/d)*sp;
+      }
+    });
+    G.devTimer-=G.dt;
+    if(G.devTimer<=0){
+      G.devMode=false;
+      G.devLinePos=null;
+      closeDlg();
+      NPCS.forEach(n=> {
+        n.st='w';
+        n.spd=0.5+Math.random()*0.5;
+        n.tx=5+Math.random()*(C.W-10);
+        n.ty=5+Math.random()*(C.H-10);
+        n.pt=1+Math.random()*3;
+      });
+      notif('ðŸƒ NPC BUBAR!','NPC kembali menyebar...');
+    }
+    return;
+  }
+  NPCS.forEach(n=> {
+    if(n===G.npcI)return;
+    // Meeting state â€” NPC diam sambil ngobrol
+    if(n.at>=0){
+      n.meetT-=G.dt||.016;
+      if(n.meetT<=0){n.at=-1;n.st='p';n.pt=2+Math.random()*4;}
+      return;
+    }
+    n.pt-=G.dt||.016;
+    if(n.st==='w'){
+      const dx=n.tx-n.x,dy=n.ty-n.y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d>.3){
+        const sp=n.spd*(G.dt||.016);
+        n.x+=Math.sign(dx)*sp;n.y+=Math.sign(dy)*sp;
+      }else{
+        // Sampai tujuan â€” cek apakah di meet point
+        const mi=MEET_PTS.findIndex(m=> Math.abs(n.x-m.x)<1.5&&Math.abs(n.y-m.y)<1.5);
+        if(mi>=0){
+          const others=NPCS.filter(o=> o!==n&&o.at===mi);
+          if(others.length>0||Math.random()<.3){
+            n.at=mi;n.meetT=3+Math.random()*5;
+          }else{n.st='p';n.pt=.5+Math.random()*2;}
+        }else{n.st='p';n.pt=1+Math.random()*4;}
+      }
+    }else if(n.pt<=0){
+      n.st='w';
+      // 25% chance pergi ke meet point
+      if(Math.random()<.25&&MEET_PTS.length>0){
+        const mp=MEET_PTS[Math.random()*MEET_PTS.length|0];
+        n.tx=mp.x;n.ty=mp.y;
+      }else{
+        for(let a=0;a<10;a++){
+          n.tx=5+Math.random()*(C.W-10);n.ty=5+Math.random()*(C.H-10);
+          if(!isWall(n.tx|0,n.ty|0)&&MAP[n.ty|0]?.[n.tx|0]!==6)break;
+        }
+      }
+      n.pt=0;
+    }
+  });
+}
+// ===== DIALOGUE =====
+function startDlg(npc){
+  sfxInteract();G.npcI=npc;G.dlg=0;
+  // Inject gossip jika NPC sedang di meet point dengan NPC lain
+  if(npc.at>=0&&npc.d[0]&&npc.d[0].o){
+    const others=NPCS.filter(o=> o!==npc&&o.at===npc.at);
+    if(others.length>0){
+      const rumor=RUMORS[Math.random()*RUMORS.length|0];
+      npc.d.unshift({q:'(Ngobrol)',a:'Eh ada yang baru!',o:[
+        {t:'Denger gossip!',r:()=> rumor},
+        {t:`Sama ${others[0].n}?`,r:()=> `Iya, kami lagi ngobrol. ${rumor}`},
+        {t:'Lanjutkan!',r:()=> 'Hehe, iya. Makasih udah nyapa!'},
+      ]});
+    }
+  }
+  showDlg(npc);
+}
+function showDlg(npc){
+  const d=npc.d[G.dlg%npc.d.length];
+  document.getElementById('dn').textContent=npc.n+' - '+npc.t;
+  document.getElementById('dt').textContent=d.a;
+  const opts=document.getElementById('dopt');
+  opts.innerHTML=d.o.map((o,i)=> `<button data-oi="${i}">${o.t}</button>`).join('')+
+    '<button class="d-next" id="dnext">â–¸ Lanjut</button>';
+  opts.querySelectorAll('button[data-oi]').forEach(b=> {
+    b.onclick=()=> {
+      const oi=parseInt(b.dataset.oi);
+      const resp=d.o[oi].r();
+      document.getElementById('dt').textContent=resp;
+      document.getElementById('dopt').innerHTML='<button class="d-next" id="dnext2">â–¸ Tutup</button>';
+      document.getElementById('dnext2').onclick=()=> closeDlg();
+      G.xp+=5;G.m+=500;
+      sfxCoin();
+      if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}
+      updHUD();
+    };
+  });
+  document.getElementById('dnext').onclick=()=> {
+    G.dlg=(G.dlg+1)%npc.d.length;
+    showDlg(npc);
+  };
+  document.getElementById('diabox').classList.add('show');
+}
+function closeDlg(){
+  document.getElementById('diabox').classList.remove('show');
+  G.npcI=null;
+}
+// ===== INTERACTION =====
+function interact(){
+  if(G.npcI){closeDlg();return;}
+  const near=NPCS.find(n=> Math.abs(n.x-G.px)<3&&Math.abs(n.y-G.py)<3);
+  if(near){startDlg(near);return;}
+  const nearB=BLD.find(b=> Math.abs(b.x+b.w/2-G.px)<3.5&&Math.abs(b.y+b.h/2-G.py)<3.5);
+  if(nearB&&nearB.fn){sfxInteract();nearB.fn();return;}
+  notif('ðŸ¤·','Tidak ada interaksi');
+}
+function shopMM(){
+  panel('ðŸª MINI MARKET',ITEMS.map((it,i)=> 
+    `<button class="pb" data-i="${i}" style="background:rgba(255,200,100,.08);border:1px solid rgba(255,200,100,.12);color:#ddd;padding:3px 8px;font-size:8px;cursor:pointer;border-radius:3px;margin:2px">${it.c} ${it.n} Rp${(it.p/1e3).toFixed(0)}K</button>`
+  ).join('')+'<button class="pc" id="bc">TUTUP</button>');
+  document.querySelectorAll('.pb[data-i]').forEach(el=> {
+    el.onclick=()=> {
+      const it=ITEMS[parseInt(el.dataset.i)];
+      if(G.m>=it.p){G.m-=it.p;if(!G.inv)G.inv=[];const e=G.inv.find(x=> x.n===it.n);if(e)e.q=(e.q||1)+1;else G.inv.push({n:it.n,q:1,c:it.c,d:it.d});sfxCoin();notif('ðŸ›’ DIBELI!',it.n+' dibeli!');updHUD();}
+      else notif('ðŸ’¸','Uang tidak cukup!');
+    };
+  });
+  document.getElementById('bc').onclick=()=> document.getElementById('notif').classList.remove('show');
+}
+function shopCafe(){
+  panel('â˜• CAFE','Nikmati kopi susu ala Jepang. +30 Energy! Rp10.000',()=> {
+    if(G.m>=1e4){G.m-=1e4;G.en=Math.min(G.me,G.en+30);sfxCoin();updHUD();notif('â˜• SEGAR!','Energy +30!');}
+    else notif('ðŸ’¸','Uang tidak cukup!');
+  });
+}
+function shopDev(){
+  if(G.proj){
+    const p=G.proj;
+    panel('ðŸ’» KANTOR DEV',`Project: ${p.n}<br>Progress: ${p.prog}/${p.t}<br>Pay: Rp${(p.pay/1e3).toFixed(0)}K Â· XP: ${p.xp}`,
+      ()=> {if(G.en<5){notif('âš¡','Energy habis!');return;}G.en-=5;G.proj.prog++;if(G.proj.prog>=G.proj.t){G.m+=G.proj.pay;G.xp+=G.proj.xp;G.pgs++;sfxLevel();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;notif('â­ LEVEL UP!','Level '+G.lv+'!');}G.proj=null;notif('âœ… SELESAI!','Project selesai!');}else{sfxStep();notif('ðŸ’» NGODING','Progress: '+G.proj.prog+'/'+G.proj.t);}updHUD();},'ðŸ’» KERJA','ðŸ”„ AMBIL BARU',
+      ()=> {G.proj=null;document.getElementById('notif').classList.remove('show');notif('ðŸ“‹','Pilih project baru');}
+    );
+  }else{
+    const html=PROJ.filter(p=> G.lv>=p.r).map((p,i)=> 
+      `<button class="pb" data-p="${i}" style="background:rgba(255,200,100,.08);border:1px solid rgba(255,200,100,.12);color:#ddd;padding:3px 8px;font-size:8px;cursor:pointer;border-radius:3px;margin:2px">${p.n} Rp${(p.pay/1e3).toFixed(0)}K</button>`
+    ).join('')+'<button class="pc" id="bc2">TUTUP</button>';
+    panel('ðŸ’» PILIH PROJECT',html);
+    document.querySelectorAll('.pb[data-p]').forEach(el=> {
+      el.onclick=()=> {const p=PROJ[parseInt(el.dataset.p)];G.proj={...p,prog:0};document.getElementById('notif').classList.remove('show');notif('ðŸ’» MULAI!','Mengerjakan: '+p.n);updHUD();};
+    });
+    const b2=document.getElementById('bc2');if(b2)b2.onclick=()=> document.getElementById('notif').classList.remove('show');
+  }
+}
+function shopElec(){
+  panel('ðŸ”Œ TOKO ELEKTRONIK','ðŸ’» LAPTOP PRO Rp1.000.000 (+50% Speed)<br>ðŸ–¥ï¸ MONITOR 4K Rp500.000 (+30% XP)<br>ðŸ–±ï¸ MOUSE GAMING Rp300.000 (+20%)',
+    ()=> {if(G.m>=1e6){G.m-=1e6;G.sk+=2;sfxCoin();notif('ðŸ’» LAPTOP!','Speed +50%!');updHUD();}else notif('ðŸ’¸','Butuh Rp1.000.000!');},'ðŸ’» BELI','TUTUP');
+}
+function shopCloth(){
+  panel('ðŸ‘˜ TOKO BAJU','Kimono digital untuk karaktermu! Rp50.000',
+    ()=> {if(G.m>=5e4){G.m-=5e4;sfxCoin();notif('ðŸ‘˜ KEREN!','Pakai kimono digital!');updHUD();}else notif('ðŸ’¸','Butuh Rp50.000!');},'ðŸ‘˜ BELI','TUTUP');
+}
+function shopHome(){
+  panel('ðŸ  RUMAHKU',`Istirahat (Full HP+Energy)<br>Coding ${G.sk} Â· Project ${G.pgs}<br>ðŸŽ£ Ikan: ${G.fc} Â· ðŸŒ¾ Panen: ${G.cr}`,
+    ()=> {G.hp=100;G.en=G.me;notif('ðŸ˜´ ISTIRAHAT','HP & Energy full!');updHUD();},'ðŸ˜´ TIDUR','TUTUP');
+}
+function shopKuil(){
+  panel('â›©ï¸ KUIX',`+50 XP! Berkah untuk Arif!`,
+    ()=> {G.xp+=50;sfxLevel();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;notif('â­ LEVEL UP!','Level '+G.lv+'!');}notif('â›©ï¸ BERKAH!','+50 XP!');updHUD();},'ðŸ™ BERDOA','TUTUP');
+}
+function shopCircus(){
+  panel('ðŸŽª SIRKUS MEGAH',
+    'ðŸŽ¡ Bianglala berputar! ðŸŽª Pertunjukan sirkus! ðŸŽˆ+20 XP +10 Energy! Rp5.000',
+    ()=> {if(G.m>=5e3){G.m-=5e3;G.xp+=20;G.en=Math.min(G.me,G.en+10);sfxLevel();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;notif('â­ LEVEL UP!','Level '+G.lv+'!');}notif('ðŸŽª SERU!','+20 XP +10 Energy!');updHUD();}else notif('ðŸ’¸','Butuh Rp5.000!');
+    },'ðŸŽª MASUK','TUTUP');
+}
+function shopWarkop(){
+  panel('â˜• WARKOP',`Kopi tubruk + pisang goreng Rp5.000<br>+25 Energy +5 XP`,
+    ()=> {if(G.m>=5e3){G.m-=5e3;G.en=Math.min(G.me,G.en+25);G.xp+=5;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('â˜• NAMPOL!','+25 Energy +5 XP!');}else notif('ðŸ’¸','Butuh Rp5.000!');
+    },'â˜• PESAN','TUTUP');
+}
+function shopWarnet(){
+  panel('ðŸ–¥ï¸ WARNET',`Main game online +30 XP! Rp7.000<br>Atau kursus coding +20 Energy Rp10.000`,
+    ()=> {if(G.m>=7e3){G.m-=7e3;G.xp+=30;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸŽ® ASIK!','+30 XP!');}else notif('ðŸ’¸','Butuh Rp7.000!');
+    },'ðŸŽ® MAIN','ðŸ”„ KURSUS',
+    ()=> {if(G.m>=1e4){G.m-=1e4;G.en=Math.min(G.me,G.en+20);G.xp+=10;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ’» BELAJAR!','+20 Energy +10 XP!');}else notif('ðŸ’¸','Butuh Rp10.000!');}
+  );
+}
+function shopBuku(){
+  panel('ðŸ“š TOKO BUKU',`Buku "JavaScript untuk Pemula" +15 XP Rp8.000<br>Buku "Algoritma & Struktur Data" +25 XP Rp15.000<br>Komik +10 Energy Rp5.000`,
+    ()=> {if(G.m>=8e3){G.m-=8e3;G.xp+=15;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ“– BACA!','+15 XP!');}else notif('ðŸ’¸','Butuh Rp8.000!');
+    },'ðŸ“• JS','ðŸ“— ALGO',
+    ()=> {if(G.m>=15e3){G.m-=15e3;G.xp+=25;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ“– BELAJAR!','+25 XP!');}else notif('ðŸ’¸','Butuh Rp15.000!');}
+  );
+}
+function shopVermak(){
+  panel('ðŸ‘– VERMAK LEVIS',`Celana jeans premium! +2 Skill Rp20.000<br>Jaket denim keren! +3 Skill Rp35.000`,
+    ()=> {if(G.m>=2e4){G.m-=2e4;G.sk+=2;sfxCoin();updHUD();notif('ðŸ‘– KEREN!','Skill +2!');}else notif('ðŸ’¸','Butuh Rp20.000!');
+    },'ðŸ‘– CELANA','ðŸ§¥ JAKET',
+    ()=> {if(G.m>=35e3){G.m-=35e3;G.sk+=3;sfxCoin();updHUD();notif('ðŸ§¥ MANTAP!','Skill +3!');}else notif('ðŸ’¸','Butuh Rp35.000!');}
+  );
+}
+function shopWartel(){
+  panel('ðŸ“ž WARTEL',`Telepon keluarga +20 Energy Rp3.000<br>Telepon client +10 XP Rp5.000`,
+    ()=> {if(G.m>=3e3){G.m-=3e3;G.en=Math.min(G.me,G.en+20);sfxCoin();updHUD();notif('ðŸ“ž HAI!','+20 Energy!');}else notif('ðŸ’¸','Butuh Rp3.000!');
+    },'ðŸ“ž KELUARGA','ðŸ“ž KLIEN',
+    ()=> {if(G.m>=5e3){G.m-=5e3;G.xp+=10;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ“ž NEGO!','+10 XP!');}else notif('ðŸ’¸','Butuh Rp5.000!');}
+  );
+}
+function shopRonda(){
+  panel('ðŸš¨ POS RONDA',`Ronda malam +10 XP +5 Energy Rp2.000<br>Lapor keamanan +5 XP Rp1.000`,
+    ()=> {if(G.m>=2e3){G.m-=2e3;G.xp+=10;G.en=Math.min(G.me,G.en+5);sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸš¨ RONDA!','+10 XP +5 Energy!');}else notif('ðŸ’¸','Butuh Rp2.000!');
+    },'ðŸš¨ RONDA','ðŸ“ LAPOR',
+    ()=> {if(G.m>=1e3){G.m-=1e3;G.xp+=5;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ“ LAPOR!','+5 XP!');}else notif('ðŸ’¸','Butuh Rp1.000!');}
+  );
+}
+function shopPosyandu(){
+  panel('ðŸ¥ POSYANDU',`<div style="font-size:9px;text-align:center;margin:2px 0">âœ… Cek kesehatan gratis +20 HP</div>`,
+    ()=> {G.hp=Math.min(100,G.hp+20);sfxCoin();updHUD();notif('ðŸ¥ SEHAT!','+20 HP (gratis)!');},
+    'âœ… GRATIS','ðŸ’‰ IMUNISASI',
+    ()=> {if(G.m>=3e3){G.m-=3e3;G.hp=Math.min(100,G.hp+15);G.xp+=5;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ’‰ SEHAT!','+15 HP +5 XP!');}else notif('ðŸ’¸','Butuh Rp3.000!');}
+  );
+}
+function shopRT(){
+  panel('ðŸ  RUMAH RT',`Urus surat izin +5 XP Rp2.000<br>Laporan warga +3 XP Rp1.000<br>ðŸ† Warga Teladan: +50 XP (setiap 5 level)`,
+    ()=> {if(G.m>=2e3){G.m-=2e3;G.xp+=5;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ“‹ URUS!','+5 XP!');}else notif('ðŸ’¸','Butuh Rp2.000!');
+    },'ðŸ“‹ IZIN','ðŸ“ LAPOR',
+    ()=> {if(G.m>=1e3){G.m-=1e3;G.xp+=3;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ“ LAPOR!','+3 XP!');}else notif('ðŸ’¸','Butuh Rp1.000!');}
+  );
+}
+function shopRW(){
+  panel('ðŸ˜ï¸ RUMAH RW',`Koordinasi warga +8 XP Rp4.000<br>Proyek gotong royong +15 XP +10 Energy Rp8.000`,
+    ()=> {if(G.m>=4e3){G.m-=4e3;G.xp+=8;sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸ˜ï¸ KOORDINASI!','+8 XP!');}else notif('ðŸ’¸','Butuh Rp4.000!');
+    },'ðŸ¤ KOORDINASI','ðŸŒ± GOTONG ROYONG',
+    ()=> {if(G.m>=8e3){G.m-=8e3;G.xp+=15;G.en=Math.min(G.me,G.en+10);sfxCoin();if(G.xp>=G.xn){G.lv++;G.xp-=G.xn;G.xn=Math.floor(G.xn*1.4);G.me+=10;G.en=G.me;G.scoreMul=1+G.lv*.2;sfxLevel();notif('â­ LEVEL UP!','Level '+G.lv+'!');}updHUD();notif('ðŸŒ± GOTONG ROYONG!','+15 XP +10 Energy!');}else notif('ðŸ’¸','Butuh Rp8.000!');}
+  );
+}
+function panel(t,html,fn,fb,fc,fx){
+  const p=document.getElementById('notif');
+  document.getElementById('nt').textContent=t;
+  if(typeof html==='string')document.getElementById('ns').innerHTML=html;
+  else document.getElementById('ns').textContent=html;
+  const btns=document.getElementById('ns').querySelectorAll('.pb,.pc');
+  if(!btns.length){
+    document.getElementById('ns').innerHTML=(document.getElementById('ns').textContent||'')+
+      (fn?`<div style="margin-top:4px;display:flex;gap:4px;justify-content:center">
+        <button class="d-opt" id="pn1">${fb||'OK'}</button>
+        ${fc?`<button class="d-opt" id="pn2">${fc}</button>`:''}
+      </div>`:'');
+    const b1=document.getElementById('pn1');if(b1&&fn)b1.onclick=fn;
+    const b2=document.getElementById('pn2');if(b2&&fx)b2.onclick=fx;else if(b2)b2.onclick=()=> p.classList.remove('show');
+  }
+  p.classList.add('show');
+}
+// ===== NOTIF =====
+let nTimer=null;
+function notif(t,s){
+  const p=document.getElementById('notif');
+  document.getElementById('nt').textContent=t;
+  document.getElementById('ns').textContent=s||'';
+  p.classList.add('show');
+  if(nTimer)clearTimeout(nTimer);
+  nTimer=setTimeout(()=> p.classList.remove('show'),2500);
+}
+function updHUD(){
+  document.getElementById('sm').textContent=G.m.toLocaleString();
+  document.getElementById('slv').textContent=G.lv;
+  document.getElementById('sen').textContent=G.en;
+  document.getElementById('shp').textContent=G.hp;
+}
+// ===== TODO (Kanban) =====
+function initTD(){try{G.td=JSON.parse(localStorage.getItem('pTD')||'[]');}catch(e){}renderKB();}
+function addTD(){
+  const i=document.getElementById('tdi'),t=i.value.trim();if(!t)return;
+  G.td.push({id:Date.now(),text:t,status:'planning'});i.value='';saveTD();renderKB();
+}
+function mvTD(id,st){
+  const t=G.td.find(x=> x.id===id);if(!t)return;
+  if(st==='done')t.status='done';
+  else if(st==='fail')t.status='fail';
+  else if(st==='planning')t.status='planning';
+  else if(st==='progress')t.status='progress';
+  saveTD();renderKB();
+}
+function delTD(id){G.td=G.td.filter(t=> t.id!==id);saveTD();renderKB();}
+function saveTD(){localStorage.setItem('pTD',JSON.stringify(G.td));}
+function renderKB(){
+  const cols={planning:'kl-planning',progress:'kl-progress',done:'kl-done'};
+  Object.keys(cols).forEach(k=> {
+    const ul=document.getElementById(cols[k]);
+    const items=G.td.filter(t=> t.status===k||(k==='done'&&(t.status==='done'||t.status==='fail')));
+    if(!items.length){ul.innerHTML='<li class="ke">â€”</li>';return;}
+    ul.innerHTML=items.map(t=> {
+      const cls=t.status==='done'?'done':t.status==='fail'?'fail':'';
+      let prev='',next='';
+      if(t.status==='planning'){next='progress';}
+      else if(t.status==='progress'){prev='planning';next='done';}
+      else if(t.status==='done'){prev='progress';next='fail';}
+      else if(t.status==='fail'){prev='done';}
+      return `<li>
+        <span class="kt ${cls}">${esc(t.text)}</span>
+        <span class="km">
+          ${prev?`<button class="kleft" data-mv="${t.id}:${prev}">â—€</button>`:''}
+          ${next?`<button class="kright" data-mv="${t.id}:${next}">â–¶</button>`:''}
+          <button class="kdel" data-del="${t.id}">âœ•</button>
+        </span>
+      </li>`;
+    }).join('');
+    ul.querySelectorAll('[data-mv]').forEach(b=> {
+      const[id,st]=b.dataset.mv.split(':');
+      b.onclick=()=> mvTD(+id,st);
+    });
+    ul.querySelectorAll('[data-del]').forEach(b=> {
+      b.onclick=()=> delTD(+b.dataset.del);
+    });
+  });
+}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+// ===== MONEY (removed) =====
+// ===== SECTIONS =====
+function setupSections(){
+  ['t'].forEach(s=> {
+    const btn=document.getElementById('st'+s),body=document.getElementById('sb'+s),ico=document.getElementById('st'+s+'i');
+    if(btn&&body){
+      const sv=localStorage.getItem('pSec'+s);
+      if(sv==='1'){body.classList.add('open');if(ico)ico.classList.add('open');}
+      btn.onclick=()=> {body.classList.toggle('open');if(ico)ico.classList.toggle('open');localStorage.setItem('pSec'+s,body.classList.contains('open')?'1':'0');};
+    }
+  });
+}
+// ===== SEARCH =====
+function searchGo(){
+  const q=document.getElementById('si').value.trim();
+  if(q)window.open('https://google.com/search?q='+encodeURIComponent(q),'_blank');
+}
+function loadCust(){
+  try{const urls=JSON.parse(localStorage.getItem('pCust')||'[]');urls.forEach(u=> addCustBtn(u.n,u.u));}catch(e){}
+}
+function addCust(){
+  const i=document.getElementById('sui');let u=i.value.trim();if(!u)return;
+  if(!u.startsWith('http'))u='https://'+u;let n='';try{n=new URL(u).hostname.replace('www.','');}catch(e){n=u;}
+  i.value='';const urls=JSON.parse(localStorage.getItem('pCust')||'[]');
+  if(urls.length>=10)return;urls.push({n,u});localStorage.setItem('pCust',JSON.stringify(urls));
+  addCustBtn(n,u);
+}
+function addCustBtn(n,u){
+  const a=document.createElement('a');a.href=u;a.target='_blank';a.textContent='ðŸ”— '+n;
+  document.getElementById('scu').appendChild(a);
+}
+// ===== CONTROLS =====
+function setupCtrl(){
+  document.addEventListener('keydown',e=> {
+    const k=e.key.toLowerCase();
+    G.k[k]=!0;
+    if(k==='e')interact();
+    if(k==='q')shootPistol();
+    if(k==='p'||k==='`')activateDevMode();
+    if(k===' '&&document.getElementById('diabox').classList.contains('show')){e.preventDefault();}
+    if(k==='enter'&&document.activeElement!==document.getElementById('si'))searchGo();
+    // Y/N for dialogue & panel
+    if((k==='y'||k==='n')&&document.getElementById('diabox').classList.contains('show')){
+      const opts=document.querySelectorAll('#dopt button[data-oi]');
+      const closeBtn=document.getElementById('dnext2')||document.getElementById('dnext');
+      if(k==='y'){
+        if(opts.length)opts[0].click();
+        else if(closeBtn)closeBtn.click();
+      }else{
+        if(opts.length>1)opts[1].click();
+        else if(closeBtn)closeBtn.click();
+      }
+    }
+    if((k==='y'||k==='n')&&document.getElementById('notif').classList.contains('show')){
+      const b1=document.getElementById('pn1');
+      const b2=document.getElementById('pn2');
+      if(k==='y'){if(b1)b1.click();}
+      else{if(b2)b2.click();else if(b1){const p=document.getElementById('notif');p.classList.remove('show');}}
+    }
+  });
+  document.addEventListener('keyup',e=> {G.k[e.key.toLowerCase()]=!1;});
+  document.getElementById('sgo').onclick=searchGo;
+  document.getElementById('si').addEventListener('keydown',e=> {if(e.key==='Enter')searchGo();});
+  document.getElementById('shide').onclick=()=> {
+    const bs=document.getElementById('bottomsheet');
+    bs.classList.toggle('collapsed');
+    document.getElementById('shide').textContent=bs.classList.contains('collapsed')?'+':'âˆ’';
+  };
+  // Footsteps from movement
+  let stepT=0;
+  document.addEventListener('mousemove',()=> {});
+  document.querySelectorAll('[data-d]').forEach(el=> {
+    const d=el.dataset.d;
+    el.addEventListener('touchstart',e=> {e.preventDefault();G.dpd=d;});
+    el.addEventListener('touchend',e=> {e.preventDefault();G.dpd=null;});
+    el.addEventListener('mousedown',()=> {G.dpd=d;});
+    el.addEventListener('mouseup',()=> {G.dpd=null;});
+  });
+  document.getElementById('tda').onclick=addTD;
+  document.getElementById('tdi').addEventListener('keydown',e=> {if(e.key==='Enter')addTD();});
+  document.getElementById('sua').onclick=addCust;
+  document.getElementById('sui').addEventListener('keydown',e=> {if(e.key==='Enter')addCust();});
+  document.getElementById('sheetbar').onclick=function(e){
+    if(e.target.tagName==='BUTTON')return;
+    const bs=document.getElementById('bottomsheet');
+    bs.classList.toggle('collapsed');
+    document.getElementById('shide').textContent=bs.classList.contains('collapsed')?'+':'âˆ’';
+  };
+  // Music toggle
+  const ost=document.getElementById('ost');
+  document.getElementById('musbtn').onclick=()=> {
+    if(ost.paused){ost.play().catch(()=> {});document.getElementById('musbtn').textContent='ðŸŽµ ON';}
+    else{ost.pause();document.getElementById('musbtn').textContent='ðŸŽµ OFF';}
+  };
+  // Keyboard shortcuts
+  document.addEventListener('keydown',e=> {
+    const k=e.key.toLowerCase();
+    // Tab navigation
+    if(e.key==='Tab'&&e.shiftKey){
+      const f=document.querySelectorAll('input,button,select,textarea');
+      const fi=Array.from(f).indexOf(document.activeElement);
+      if(fi>0){e.preventDefault();f[fi-1].focus();}
+    }else if(e.key==='Tab'){
+      const f=document.querySelectorAll('input,button,select,textarea');
+      const fi=Array.from(f).indexOf(document.activeElement);
+      if(fi<f.length-1){e.preventDefault();f[fi+1].focus();}
+    }
+    // M to toggle music
+    if(k==='m'&&!e.ctrlKey&&!e.altKey){
+      e.preventDefault();
+      document.getElementById('musbtn').click();
+    }
+    // B to toggle bottom sheet
+    if(k==='b'&&!e.ctrlKey&&!e.altKey){
+      e.preventDefault();
+      document.getElementById('shide').click();
+    }
+    // F to toggle FPS/topdown mode
+    if(k==='f'&&!e.ctrlKey&&!e.altKey){
+      e.preventDefault();
+      G.mode=G.mode==='topdown'?'fps':'topdown';
+      if(G.mode==='topdown'&&document.pointerLockElement)document.exitPointerLock();
+      notif(G.mode==='fps'?'ðŸŽ¯ FPS MODE':'ðŸ—ºï¸ TOP-DOWN MODE','');
+    }
+    // H to toggle controls panel
+    if(k==='h'&&!e.ctrlKey&&!e.altKey){
+      e.preventDefault();
+      G.showCtrl=1-G.showCtrl;
+    }
+  });
+  // Mouse look for FPS mode
+  ca.addEventListener('click',()=> {if(G.mode==='fps')ca.requestPointerLock();});
+  document.addEventListener('mousemove',e=> {
+    if(G.mode==='fps'&&document.pointerLockElement===ca){
+      G.angle+=e.movementX*.004;
+    }
+  });
+  document.getElementById('brand').onclick=()=> activateDevMode();
+}
+// ===== GAME LOOP =====
+let lt=0;
+function loop(t){
+  requestAnimationFrame(loop);
+  G.dt=Math.min((t-lt)/1000,.05);lt=t;
+  if(G.shootT>0)G.shootT-=G.dt;
+  if(G.mode==='fps'){
+    const spd=4.5*G.dt;
+    const dx=Math.cos(G.angle),dy=Math.sin(G.angle);
+    const sx=Math.cos(G.angle+Math.PI/2),sy=Math.sin(G.angle+Math.PI/2);
+    let mvxF=0,mvyF=0;
+    if(G.k['arrowleft']){G.angle-=.04;}
+    if(G.k['arrowright']){G.angle+=.04;}
+    if(G.k['w']){mvxF+=dx;mvyF+=dy;}
+    if(G.k['s']){mvxF-=dx;mvyF-=dy;}
+    if(G.k['a']){mvxF-=sx;mvyF-=sy;}
+    if(G.k['d']){mvxF+=sx;mvyF+=sy;}
+    if(mvxF||mvyF){
+      const len=Math.sqrt(mvxF*mvxF+mvyF*mvyF);
+      mvxF/=len;mvyF/=len;
+      const nx=G.px+mvxF*spd,ny=G.py+mvyF*spd;
+      if(!isWall(Math.floor(nx),Math.floor(G.py)))G.px=nx;
+      if(!isWall(Math.floor(G.px),Math.floor(ny)))G.py=ny;
+      G.px=Math.max(1,Math.min(C.W-2,G.px));
+      G.py=Math.max(1,Math.min(C.H-2,G.py));
+      G.fr+=G.dt*8;
+      sfxStep();
+    }
+  }else{
+    let mvx=0,mvy=0;
+    if(G.k['w']||G.k['arrowup'])mvy=-1;
+    if(G.k['s']||G.k['arrowdown'])mvy=1;
+    if(G.k['a']||G.k['arrowleft'])mvx=-1;
+    if(G.k['d']||G.k['arrowright'])mvx=1;
+    if(G.dpd){
+      if(G.dpd==='u')mvy=-1;if(G.dpd==='d')mvy=1;
+      if(G.dpd==='l')mvx=-1;if(G.dpd==='r')mvx=1;
+    }
+    if(mvx||mvy){
+      const len=Math.sqrt(mvx*mvx+mvy*mvy);
+      mvx/=len;mvy/=len;
+      const spd=G.k['shift']?3.5:G.spd;
+      const sp=spd*G.dt;
+      const nx=G.px+mvx*sp,ny=G.py+mvy*sp;
+      if(!isWall(Math.floor(nx),Math.floor(G.py)))G.px=nx;
+      if(!isWall(Math.floor(G.px),Math.floor(ny)))G.py=ny;
+      G.px=Math.max(1,Math.min(C.W-2,G.px));
+      G.py=Math.max(1,Math.min(C.H-2,G.py));
+      G.fr+=G.dt*6;
+      sfxStep();
+    }
+  }
+  // Passive score
+  G.scoreRate=1+G.lv*.5+G.sk*.2;
+  G.score+=G.scoreRate*G.scoreMul*G.dt;
+  // Time & weather
+  const now=new Date();
+  const jk=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Jakarta'}));
+  document.getElementById('sclk').textContent=
+    String(jk.getHours()).padStart(2,'0')+':'+String(jk.getMinutes()).padStart(2,'0')+' WIB';
+  const ic={cloudy:'â˜ï¸',rainy:'ðŸŒ§ï¸'};
+  document.getElementById('swth').textContent=ic[G.w||'']||'â˜€ï¸';
+  updateNPCs();
+  if(G.mode==='fps')renderFPS();else render();
+}
+// ===== START =====
+resize();
+window.addEventListener('resize',resize);
+genMap();initBld();markBldMap();genDecor();spawnNPCs();initTD();loadCust();setupSections();
+setupCtrl();
+updHUD();
+notif('âœ¦ PixelLife','Selamat datang, Arif! Jelajahi dunia pixel neon!');
+loop();
+</script>
+</body>
+</html>

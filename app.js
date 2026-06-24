@@ -941,7 +941,7 @@ function createCreepyNPC(x, z, name, role, dialogueStr, cColor, hcColor, isCusto
 
 function killNPC(npc) {
     if (!npc) return;
-    showNotification(`Warga ${npc.name} gugur...`);
+    showNotification(`Si ${npc.name} gugur...`);
     sfxSound(120, 0.4, 'sawtooth', 0.5); // retro death sound
     
     if (npc.parentGrp) {
@@ -988,7 +988,7 @@ function spawnNewCitizen() {
     }
     
     createCreepyNPC(tx, tz, name, role, dialogue, color, hairColor, false);
-    showNotification(`Warga baru ${name} tiba untuk membantu!`);
+    showNotification(`Si ${name} tiba untuk membantu!`);
 }
 
 // Spawn exactly 50 NPCs from NPC_DATA
